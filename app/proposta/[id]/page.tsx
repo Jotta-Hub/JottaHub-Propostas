@@ -12,7 +12,6 @@ async function getProposal(id: string): Promise<Proposal | null> {
 export default async function PropostaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProposal(id)
-  if (!p) notFound()
 
   const services = p.services || []
   const total = calcTotal(services)
