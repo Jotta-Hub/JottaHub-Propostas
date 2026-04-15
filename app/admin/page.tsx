@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase, type Proposal } from '@/lib/supabase'
+import { supabase, createSupabaseBrowser, type Proposal } from '@/lib/supabase'
 import { fmtBRL, fmtDate, addWorkdays, calcTotal, statusLabel, DEFAULT_STEPS, EMOJIS } from '@/lib/utils'
 
 export default function AdminPage() {
@@ -29,6 +30,14 @@ export default function AdminPage() {
   const [timeline, setTimeline] = useState<{ phase: string; name: string; items: string }[]>([])
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
+  const supabaseBrowser = createSupabaseBrowser()
+
+  async function handleLogout() {
+    await supabaseBrowser.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   useEffect(() => { fetchProposals() }, [])
 
@@ -148,7 +157,10 @@ export default function AdminPage() {
           </div>
           <span className="nav-badge">Propostas</span>
         </div>
-        <button className="btn-sm red" onClick={() => openModal()}>+ Nova Proposta</button>
+        <div style={{display:"flex",gap:10}}>
+          <button className="btn-sm ghost" onClick={handleLogout}>Sair</button>
+          <button className="btn-sm red" onClick={() => openModal()}>+ Nova Proposta</button>
+        </div>
       </nav>
 
       <div className="admin-wrap">
