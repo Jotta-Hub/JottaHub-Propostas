@@ -20,7 +20,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <a href="/admin" className="back-btn">← Painel</a>
+      
 
       {/* HERO */}
       <section className="p-hero">
