@@ -9,8 +9,9 @@ async function getProposal(id: string): Promise<Proposal | null> {
   return data
 }
 
-export default async function PropostaPage({ params }: { params: { id: string } }) {
-  const p = await getProposal(params.id)
+export default async function PropostaPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const p = await getProposal(id)
   if (!p) notFound()
 
   const services = p.services || []
