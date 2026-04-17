@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase, createSupabaseBrowser, type Proposal } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+import { supabase, type Proposal } from '@/lib/supabase'
 import { fmtBRL, fmtDate, addWorkdays, calcTotal, statusLabel, DEFAULT_STEPS, EMOJIS } from '@/lib/utils'
 
 export default function AdminPage() {
@@ -31,15 +32,30 @@ export default function AdminPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
-  const supabaseBrowser = createSupabaseBrowser()
 
   async function handleLogout() {
+    const supabaseBrowser = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
     await supabaseBrowser.auth.signOut()
     router.push('/login')
     router.refresh()
   }
 
-  useEffect(() => { fetchProposals() }, [])
+  useEffect(() => {
+    checkSession()
+  }, [])
+
+  async function checkSession() {
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data: { session } } = await supabaseClient.auth.getSession()
+    if (!session) {
+      router.push('/login')
+      return
+    }
+    fetchProposals()
+  }
 
   async function fetchProposals() {
     setLoading(true)
