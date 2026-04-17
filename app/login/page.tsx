@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createSupabaseBrowser } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -10,7 +15,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const supabase = createSupabaseBrowser()
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -38,26 +42,19 @@ export default function LoginPage() {
       position: 'relative',
       padding: '20px',
     }}>
-      {/* Background dots */}
       <div style={{
         position: 'fixed', inset: 0,
         backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
         backgroundSize: '30px 30px',
         pointerEvents: 'none',
       }} />
-      {/* Red glow */}
       <div style={{
         position: 'fixed', inset: 0,
         background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(232,50,26,0.06) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
-      <div style={{
-        width: '100%', maxWidth: 400,
-        animation: 'fadeUp 0.6s ease forwards',
-        position: 'relative', zIndex: 1,
-      }}>
-        {/* Logo */}
+      <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 2, marginBottom: 8 }}>
             <span className="nl-t">Jott</span>
@@ -73,22 +70,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Card */}
-        <div style={{
-          background: 'var(--gray)',
-          border: '1px solid var(--gray2)',
-          borderRadius: 4,
-          overflow: 'hidden',
-        }}>
-          {/* Card header */}
-          <div style={{
-            padding: '24px 32px 20px',
-            borderBottom: '1px solid var(--gray2)',
-          }}>
-            <div style={{
-              fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.4rem',
-              textTransform: 'uppercase', letterSpacing: '-0.01em',
-            }}>
+        <div style={{ background: 'var(--gray)', border: '1px solid var(--gray2)', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ padding: '24px 32px 20px', borderBottom: '1px solid var(--gray2)' }}>
+            <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
               Acesso <span style={{ color: 'var(--red)' }}>Restrito</span>
             </div>
             <div style={{ fontSize: '0.76rem', color: 'var(--mid)', marginTop: 4 }}>
@@ -96,7 +80,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleLogin} style={{ padding: '24px 32px 32px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -111,7 +94,6 @@ export default function LoginPage() {
                   autoFocus
                 />
               </div>
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <label className="form-label">Senha</label>
                 <input
@@ -126,15 +108,9 @@ export default function LoginPage() {
 
               {error && (
                 <div style={{
-                  background: 'rgba(232,50,26,0.1)',
-                  border: '1px solid rgba(232,50,26,0.3)',
-                  borderRadius: 2,
-                  padding: '10px 14px',
-                  fontSize: '0.82rem',
-                  color: '#ff6b6b',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
+                  background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)',
+                  borderRadius: 2, padding: '10px 14px', fontSize: '0.82rem', color: '#ff6b6b',
+                  display: 'flex', alignItems: 'center', gap: 8,
                 }}>
                   <span>⚠</span> {error}
                 </div>
@@ -152,21 +128,10 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div style={{
-          textAlign: 'center', marginTop: 24,
-          fontSize: '0.68rem', color: 'var(--gray3)',
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-        }}>
+        <div style={{ textAlign: 'center', marginTop: 24, fontSize: '0.68rem', color: 'var(--gray3)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           JOTTA HUB © 2026 — POA | RS
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: none; }
-        }
-      `}</style>
     </div>
   )
 }
