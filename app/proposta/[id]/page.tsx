@@ -12,15 +12,16 @@ async function getProposal(id: string): Promise<Proposal | null> {
 export default async function PropostaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProposal(id)
-if (!p) return null
-  const services = p?.services || []
+  if (!p) notFound()
+  if (!p) return null
+
+  const services = p.services || []
   const total = calcTotal(services)
-  const steps = p?.steps?.length ? p.steps : DEFAULT_STEPS
-  const validDate = p?.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
+  const steps = p.steps?.length ? p.steps : DEFAULT_STEPS
+  const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
 
   return (
     <>
-      
 
       {/* HERO */}
       <section className="p-hero">
