@@ -97,12 +97,10 @@ export default function AdminPage() {
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    // Upload to Supabase Storage
     const ext = file.name.split('.').pop()
     const path = `logos/${Date.now()}.${ext}`
     const { error } = await supabase.storage.from('proposal-assets').upload(path, file, { upsert: true })
     if (error) {
-      // fallback: base64
       const reader = new FileReader()
       reader.onload = ev => setLogoPreview(ev.target?.result as string)
       reader.readAsDataURL(file)
@@ -173,7 +171,7 @@ export default function AdminPage() {
           </div>
           <span className="nav-badge">Propostas</span>
         </div>
-        <div style={{display:"flex",gap:10}}>
+        <div style={{ display: 'flex', gap: 10 }}>
           <button className="btn-sm ghost" onClick={handleLogout}>Sair</button>
           <button className="btn-sm red" onClick={() => openModal()}>+ Nova Proposta</button>
         </div>
@@ -219,7 +217,7 @@ export default function AdminPage() {
             ) : proposals.map(p => {
               const tot = calcTotal(p.services)
               const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
-              const initials = (p.client || '?').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+              const initials = (p.client || '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
               return (
                 <div key={p.id} className="prop-card" onClick={() => window.open(`/proposta/${p.id}`, '_blank')}>
                   <div className="card-top">
@@ -241,9 +239,28 @@ export default function AdminPage() {
                     <span className="card-validity">Válida até {fmtDate(validDate)}</span>
                   </div>
                   <div className="card-actions" onClick={e => e.stopPropagation()}>
-                    <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
+                    <Link
+                      href={`/proposta/${p.id}`}
+                      target="_blank"
+                      className="action-btn view-btn"
+                      style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      Ver
+                    </Link>
                     <button className="action-btn" onClick={() => copyLink(p.id!)}>Link</button>
                     <button className="action-btn" onClick={() => openModal(p)}>Editar</button>
+
+                    {/* Botão Contrato — só aparece em propostas aprovadas */}
+                    {p.status === 'approved' && (
+                      <button
+                        className="action-btn"
+                        style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.3)' }}
+                        onClick={() => window.open(`/api/contract-pdf?id=${p.id}`, '_blank')}
+                      >
+                        Contrato
+                      </button>
+                    )}
+
                     <select
                       className="action-btn"
                       value={p.status}
