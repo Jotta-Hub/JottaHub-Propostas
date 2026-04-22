@@ -1,6 +1,7 @@
 import { supabase, type Proposal } from '@/lib/supabase'
 import { fmtBRL, fmtDate, addWorkdays, calcTotal, DEFAULT_STEPS } from '@/lib/utils'
 import { notFound } from 'next/navigation'
+import SignatureModal from '@/components/SignatureModal'
 
 export const revalidate = 60
 
@@ -269,6 +270,22 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
           <a href="https://wa.me/5551993009391" className="btn-red" target="_blank">↗ WhatsApp</a>
           <a href="mailto:rennan@jottahub.com.br" className="btn-outline">E-mail</a>
         </div>
+      </section>
+
+      {/* ASSINATURA */}
+      <section className="p-sec" style={{ textAlign: 'center', borderTop: '1px solid var(--gray2)' }}>
+        <div className="p-sec-label" style={{ justifyContent: 'center' }}>Aceite da Proposta</div>
+        <h2 className="p-sec-title" style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)' }}>
+          Pronto para <span className="r">fechar?</span>
+        </h2>
+        <p className="p-body" style={{ margin: '0 auto 8px', textAlign: 'center' }}>
+          Assine digitalmente com validade jurídica. Sem papel, sem burocracia.
+        </p>
+        <SignatureModal
+          proposalId={p.id!}
+          proposalClient={p.client}
+          totalValue={total}
+        />
       </section>
 
       <footer className="p-footer">
