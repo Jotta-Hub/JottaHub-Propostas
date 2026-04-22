@@ -7,6 +7,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// Dados fixos do JOTTA HUB — lidos de variáveis de ambiente
+const ADMIN_NAME = process.env.ADMIN_SIGNER_NAME!
+const ADMIN_CPF  = process.env.ADMIN_SIGNER_CPF!
+const ADMIN_EMAIL = process.env.ADMIN_SIGNER_EMAIL!
+
 export async function POST(req: NextRequest) {
   try {
     const { proposal_id, email, code, signer_name, signer_cpf } = await req.json()
@@ -49,7 +54,9 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-real-ip') || 'unknown'
     const userAgent = req.headers.get('user-agent') || 'unknown'
 
-    // Salva a assinatura
+    const signedAt = new Date().toISOString()
+
+    // ─── Salva assinatura do CLIENTE ───────────────────────────────────────────
     const { error: sigError } = await supabase.from('signatures').insert({
       proposal_id,
       signer_name,
@@ -58,11 +65,28 @@ export async function POST(req: NextRequest) {
       signer_ip: ip,
       signer_agent: userAgent,
       proposal_hash: proposalHash,
-      confirmed_at: new Date().toISOString(),
+      confirmed_at: signedAt,
       status: 'confirmed',
+      signer_role: 'client',
     })
 
     if (sigError) throw sigError
+
+    // ─── Salva assinatura do JOTTA HUB (contra-assinatura automática) ──────────
+    const { error: adminSigError } = await supabase.from('signatures').insert({
+      proposal_id,
+      signer_name: ADMIN_NAME,
+      signer_email: ADMIN_EMAIL,
+      signer_cpf: ADMIN_CPF,
+      signer_ip: 'server',
+      signer_agent: 'JOTTA HUB Sistema',
+      proposal_hash: proposalHash,
+      confirmed_at: signedAt,
+      status: 'confirmed',
+      signer_role: 'contractor',
+    })
+
+    if (adminSigError) throw adminSigError
 
     // Atualiza status da proposta
     await supabase
@@ -77,7 +101,9 @@ export async function POST(req: NextRequest) {
       .eq('proposal_id', proposal_id)
       .eq('email', email)
 
-    // Envia e-mail de confirmação pro signatário
+    const signedAtFormatted = new Date(signedAt).toLocaleString('pt-BR')
+
+    // ─── E-mail de confirmação pro CLIENTE ─────────────────────────────────────
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -101,8 +127,12 @@ export async function POST(req: NextRequest) {
                 <div style="padding:32px;">
                   <p style="font-size:2rem;text-align:center;margin-bottom:16px;">✅</p>
                   <h1 style="font-size:1.4rem;font-weight:900;text-transform:uppercase;text-align:center;margin-bottom:16px;">Proposta Assinada!</h1>
-                  <p style="font-size:0.95rem;color:rgba(245,243,239,0.7);line-height:1.7;text-align:center;margin-bottom:32px;">Sua assinatura foi registrada com validade jurídica pela Lei 14.063/2020.</p>
-                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:20px;">
+                  <p style="font-size:0.95rem;color:rgba(245,243,239,0.7);line-height:1.7;text-align:center;margin-bottom:32px;">
+                    Ambas as partes assinaram o documento. Validade jurídica garantida pela Lei 14.063/2020.
+                  </p>
+
+                  <p style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;">Assinatura do Contratante</p>
+                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:20px;margin-bottom:16px;">
                     <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1C1C1C;font-size:0.78rem;">
                       <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Signatário</span>
                       <span>${signer_name}</span>
@@ -111,12 +141,31 @@ export async function POST(req: NextRequest) {
                       <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">CPF</span>
                       <span>${signer_cpf}</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1C1C1C;font-size:0.78rem;">
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:0.78rem;">
                       <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Data</span>
-                      <span>${new Date().toLocaleString('pt-BR')}</span>
+                      <span>${signedAtFormatted}</span>
+                    </div>
+                  </div>
+
+                  <p style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;">Assinatura da Contratada</p>
+                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:20px;margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1C1C1C;font-size:0.78rem;">
+                      <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Signatário</span>
+                      <span>${ADMIN_NAME}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1C1C1C;font-size:0.78rem;">
+                      <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">CPF</span>
+                      <span>${ADMIN_CPF}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:0.78rem;">
-                      <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Hash</span>
+                      <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Data</span>
+                      <span>${signedAtFormatted}</span>
+                    </div>
+                  </div>
+
+                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:16px;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.72rem;">
+                      <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Hash do Documento</span>
                       <span style="font-size:0.65rem;color:#555;">${proposalHash.slice(0, 16)}...</span>
                     </div>
                   </div>
@@ -130,7 +179,7 @@ export async function POST(req: NextRequest) {
       }),
     })
 
-    // Notifica o Rennan
+    // ─── Notifica o Rennan ─────────────────────────────────────────────────────
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -140,15 +189,22 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         from: 'JOTTA HUB Sistema <propostas@jottahub.com.br>',
         to: 'rennan@jottahub.com.br',
-        subject: `✅ Proposta assinada por ${signer_name}`,
-        html: `<p style="font-family:sans-serif;">A proposta foi assinada por <strong>${signer_name}</strong> (${email}) às ${new Date().toLocaleString('pt-BR')}.</p><p>CPF: ${signer_cpf}</p>`,
+        subject: `✅ Contrato assinado por ${signer_name}`,
+        html: `
+          <p style="font-family:sans-serif;">
+            A proposta foi assinada por <strong>${signer_name}</strong> (${email}) às ${signedAtFormatted}.
+          </p>
+          <p style="font-family:sans-serif;">CPF: ${signer_cpf}</p>
+          <p style="font-family:sans-serif;">Contra-assinatura do JOTTA HUB registrada automaticamente no mesmo momento.</p>
+          <p style="font-family:sans-serif;color:#888;font-size:0.8rem;">Hash: ${proposalHash}</p>
+        `,
       }),
     })
 
     return NextResponse.json({
       success: true,
       hash: proposalHash,
-      signed_at: new Date().toISOString(),
+      signed_at: signedAt,
     })
   } catch (err) {
     console.error(err)
