@@ -17,8 +17,8 @@ export default function AdminPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoMode, setLogoMode] = useState<'original' | 'white'>('original')
   const [activeEmojiIdx, setActiveEmojiIdx] = useState<number | null>(null)
+  const [showArchived, setShowArchived] = useState(false)
 
-  // form state
   const [form, setForm] = useState({
     client: '', contact: '', greeting: '', intro: '',
     title: '', objective: '', context: '',
@@ -40,9 +40,7 @@ export default function AdminPage() {
     router.refresh()
   }
 
-  useEffect(() => {
-    checkSession()
-  }, [])
+  useEffect(() => { checkSession() }, [])
 
   async function checkSession() {
     const supabaseClient = createClient(
@@ -50,10 +48,7 @@ export default function AdminPage() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
     const { data: { session } } = await supabaseClient.auth.getSession()
-    if (!session) {
-      router.push('/login')
-      return
-    }
+    if (!session) { router.push('/login'); return }
     fetchProposals()
   }
 
@@ -132,9 +127,28 @@ export default function AdminPage() {
   }
 
   async function deleteProposal(id: string) {
-    if (!confirm('Excluir esta proposta?')) return
-    await supabase.from('proposals').delete().eq('id', id)
+    if (!confirm('Excluir permanentemente esta proposta? Esta ação não pode ser desfeita.')) return
+    await supabase.from('signature_codes').delete().eq('proposal_id', id)
+    await supabase.from('signatures').delete().eq('proposal_id', id)
+    const { error } = await supabase.from('proposals').delete().eq('id', id)
+    if (error) {
+      showToast('Erro ao excluir. Tente novamente.')
+      console.error(error)
+      return
+    }
     showToast('Proposta excluída.')
+    fetchProposals()
+  }
+
+  async function archiveProposal(id: string) {
+    await supabase.from('proposals').update({ status: 'archived' }).eq('id', id)
+    showToast('Proposta arquivada.')
+    fetchProposals()
+  }
+
+  async function unarchiveProposal(id: string) {
+    await supabase.from('proposals').update({ status: 'pending' }).eq('id', id)
+    showToast('Proposta reativada como Rascunho.')
     fetchProposals()
   }
 
@@ -148,10 +162,13 @@ export default function AdminPage() {
     fetchProposals()
   }
 
-  const total = proposals.length
-  const sent = proposals.filter(p => p.status === 'sent').length
-  const approved = proposals.filter(p => p.status === 'approved').length
-  const volume = proposals.reduce((s, p) => s + calcTotal(p.services), 0)
+  const activeProposals = proposals.filter(p => p.status !== 'archived')
+  const archivedProposals = proposals.filter(p => p.status === 'archived')
+
+  const total = activeProposals.length
+  const sent = activeProposals.filter(p => p.status === 'sent').length
+  const approved = activeProposals.filter(p => p.status === 'approved').length
+  const volume = activeProposals.reduce((s, p) => s + calcTotal(p.services), 0)
 
   if (loading) return (
     <div className="loading-screen">
@@ -200,6 +217,7 @@ export default function AdminPage() {
           <div className="stat-card"><div className="stat-n">{total > 0 ? fmtBRL(volume) : 'R$ 0'}</div><div className="stat-l">Volume Total</div></div>
         </div>
 
+        {/* PROPOSTAS ATIVAS */}
         <div className="proposals-section">
           <div className="section-head">
             <div className="section-title-row">
@@ -214,7 +232,7 @@ export default function AdminPage() {
                 <div className="empty-title">Nenhuma proposta ainda</div>
                 <div className="empty-sub">Clique em "Nova Proposta" para começar</div>
               </div>
-            ) : proposals.map(p => {
+            ) : activeProposals.map(p => {
               const tot = calcTotal(p.services)
               const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
               const initials = (p.client || '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -239,18 +257,10 @@ export default function AdminPage() {
                     <span className="card-validity">Válida até {fmtDate(validDate)}</span>
                   </div>
                   <div className="card-actions" onClick={e => e.stopPropagation()}>
-                    <Link
-                      href={`/proposta/${p.id}`}
-                      target="_blank"
-                      className="action-btn view-btn"
-                      style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      Ver
-                    </Link>
+                    <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
                     <button className="action-btn" onClick={() => copyLink(p.id!)}>Link</button>
                     <button className="action-btn" onClick={() => openModal(p)}>Editar</button>
 
-                    {/* Botão Contrato — só aparece em propostas aprovadas */}
                     {p.status === 'approved' && (
                       <button
                         className="action-btn"
@@ -272,6 +282,15 @@ export default function AdminPage() {
                       <option value="approved">Aprovada</option>
                       <option value="expired">Expirada</option>
                     </select>
+
+                    <button
+                      className="action-btn"
+                      style={{ color: '#888', borderColor: '#2E2E2E' }}
+                      onClick={() => archiveProposal(p.id!)}
+                    >
+                      Arq.
+                    </button>
+
                     <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
                   </div>
                 </div>
@@ -279,6 +298,76 @@ export default function AdminPage() {
             })}
           </div>
         </div>
+
+        {/* PAINEL DE ARQUIVADAS */}
+        {archivedProposals.length > 0 && (
+          <div className="proposals-section" style={{ marginTop: 40 }}>
+            <div
+              className="section-head"
+              onClick={() => setShowArchived(v => !v)}
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+            >
+              <div className="section-title-row">
+                <span className="section-title" style={{ color: '#555' }}>
+                  {showArchived ? '▾' : '▸'} Propostas Arquivadas
+                </span>
+                <span className="section-count" style={{ background: '#1C1C1C', color: '#555' }}>
+                  {archivedProposals.length}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: '#444', marginTop: 4 }}>
+                Clique para {showArchived ? 'ocultar' : 'expandir'}
+              </p>
+            </div>
+
+            {showArchived && (
+              <div className="cards-grid" style={{ marginTop: 16 }}>
+                {archivedProposals.map(p => {
+                  const tot = calcTotal(p.services)
+                  const initials = (p.client || '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+                  return (
+                    <div key={p.id} className="prop-card" style={{ opacity: 0.6 }} onClick={() => window.open(`/proposta/${p.id}`, '_blank')}>
+                      <div className="card-top">
+                        <div className="card-logo">
+                          {p.logo_url
+                            ? <img src={p.logo_url} alt={p.client} />
+                            : <span className="card-logo-initials">{initials}</span>
+                          }
+                        </div>
+                        <div className="card-info">
+                          <div className="card-client">{p.client}</div>
+                          <div className="card-contact">{p.contact}</div>
+                          <div className="card-project">{p.title || 'Sem título'}</div>
+                        </div>
+                        <span className="badge" style={{ background: '#1C1C1C', color: '#555', borderColor: '#2E2E2E' }}>Arquivada</span>
+                      </div>
+                      <div className="card-meta">
+                        {tot > 0 && <><span className="card-value">{fmtBRL(tot)}</span><span className="card-sep" /></>}
+                        <span className="card-validity" style={{ color: '#444' }}>Arquivada em {fmtDate(p.updated_at || p.created_at)}</span>
+                      </div>
+                      <div className="card-actions" onClick={e => e.stopPropagation()}>
+                        <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
+                        <button
+                          className="action-btn"
+                          style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.2)' }}
+                          onClick={() => unarchiveProposal(p.id!)}
+                        >
+                          Reativar
+                        </button>
+                        <button
+                          className="action-btn del-btn"
+                          onClick={() => deleteProposal(p.id!)}
+                        >
+                          Del
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* MODAL */}
