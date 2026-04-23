@@ -17,6 +17,7 @@ export function createSupabaseBrowser() {
 export type Proposal = {
   id?: string
   created_at?: string
+  updated_at?: string
   client: string
   contact?: string
   greeting?: string
@@ -25,7 +26,7 @@ export type Proposal = {
   objective?: string
   context?: string
   validity?: number
-  status?: 'pending' | 'sent' | 'approved' | 'expired'
+  status?: 'pending' | 'sent' | 'approved' | 'expired' | 'archived'
   logo_url?: string
   logo_mode?: 'original' | 'white'
   pillars?: { name: string; body: string }[]
