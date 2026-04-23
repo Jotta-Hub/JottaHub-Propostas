@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { supabase, type Proposal } from '@/lib/supabase'
 import { fmtBRL, fmtDate, addWorkdays, calcTotal, statusLabel, DEFAULT_STEPS, EMOJIS } from '@/lib/utils'
+import BriefingGenerator from '@/components/BriefingGenerator'
 
 export default function AdminPage() {
   const [proposals, setProposals] = useState<Proposal[]>([])
@@ -62,6 +63,36 @@ export default function AdminPage() {
   function showToast(msg: string) {
     setToast({ msg, show: true })
     setTimeout(() => setToast(t => ({ ...t, show: false })), 2600)
+  }
+
+  // Callback do BriefingGenerator — preenche todos os campos do formulário
+  function handleBriefingGenerated(data: {
+    client: string; contact: string; greeting: string; intro: string
+    title: string; objective: string; context: string
+    pillars: { name: string; body: string }[]
+    steps: { title: string; desc: string }[]
+    deliverables: { icon: string; name: string; body: string }[]
+    services: { name: string; desc: string; value: number }[]
+    timeline: { phase: string; name: string; items: string }[]
+    validity: number; status: string
+  }) {
+    setForm({
+      client: data.client || '',
+      contact: data.contact || '',
+      greeting: data.greeting || '',
+      intro: data.intro || '',
+      title: data.title || '',
+      objective: data.objective || '',
+      context: data.context || '',
+      validity: data.validity || 5,
+      status: (data.status as Proposal['status']) || 'pending',
+    })
+    setPillars(data.pillars || [])
+    setSteps(data.steps?.length ? data.steps : DEFAULT_STEPS)
+    setDeliverables(data.deliverables || [])
+    setServices(data.services || [])
+    setTimeline(data.timeline || [])
+    showToast('Proposta preenchida com IA! Revise os campos.')
   }
 
   function openModal(p?: Proposal) {
@@ -164,7 +195,6 @@ export default function AdminPage() {
 
   const activeProposals = proposals.filter(p => p.status !== 'archived')
   const archivedProposals = proposals.filter(p => p.status === 'archived')
-
   const total = activeProposals.length
   const sent = activeProposals.filter(p => p.status === 'sent').length
   const approved = activeProposals.filter(p => p.status === 'approved').length
@@ -260,7 +290,6 @@ export default function AdminPage() {
                     <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
                     <button className="action-btn" onClick={() => copyLink(p.id!)}>Link</button>
                     <button className="action-btn" onClick={() => openModal(p)}>Editar</button>
-
                     {p.status === 'approved' && (
                       <button
                         className="action-btn"
@@ -270,7 +299,6 @@ export default function AdminPage() {
                         Contrato
                       </button>
                     )}
-
                     <select
                       className="action-btn"
                       value={p.status}
@@ -282,7 +310,6 @@ export default function AdminPage() {
                       <option value="approved">Aprovada</option>
                       <option value="expired">Expirada</option>
                     </select>
-
                     <button
                       className="action-btn"
                       style={{ color: '#888', borderColor: '#2E2E2E' }}
@@ -290,7 +317,6 @@ export default function AdminPage() {
                     >
                       Arq.
                     </button>
-
                     <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
                   </div>
                 </div>
@@ -319,7 +345,6 @@ export default function AdminPage() {
                 Clique para {showArchived ? 'ocultar' : 'expandir'}
               </p>
             </div>
-
             {showArchived && (
               <div className="cards-grid" style={{ marginTop: 16 }}>
                 {archivedProposals.map(p => {
@@ -343,7 +368,7 @@ export default function AdminPage() {
                       </div>
                       <div className="card-meta">
                         {tot > 0 && <><span className="card-value">{fmtBRL(tot)}</span><span className="card-sep" /></>}
-                        <span className="card-validity" style={{ color: '#444' }}>Arquivada em {fmtDate(p.updated_at || p.created_at)}</span>
+                        <span className="card-validity" style={{ color: '#444' }}>Arquivada</span>
                       </div>
                       <div className="card-actions" onClick={e => e.stopPropagation()}>
                         <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
@@ -354,12 +379,7 @@ export default function AdminPage() {
                         >
                           Reativar
                         </button>
-                        <button
-                          className="action-btn del-btn"
-                          onClick={() => deleteProposal(p.id!)}
-                        >
-                          Del
-                        </button>
+                        <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
                       </div>
                     </div>
                   )
@@ -382,6 +402,19 @@ export default function AdminPage() {
           </div>
           <div className="modal-body">
             <div className="form-grid">
+
+              {/* BRIEFING GENERATOR — aparece só em nova proposta */}
+              {!editingId && (
+                <div className="form-group full" style={{ marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <label className="form-label" style={{ marginBottom: 0 }}>Gerar com IA</label>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--mid)' }}>Cole um briefing e a IA preenche os campos automaticamente</span>
+                  </div>
+                  <BriefingGenerator onGenerated={handleBriefingGenerated} />
+                </div>
+              )}
+
+              <hr className="form-divider" />
               <div className="form-section-label">Cliente &amp; Logo</div>
 
               <div className="form-group full">
