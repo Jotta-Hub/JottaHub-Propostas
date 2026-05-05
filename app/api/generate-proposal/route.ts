@@ -23,59 +23,86 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2000,
+        max_tokens: 3000,
         system: `Você é um assistente especializado em criar propostas comerciais para a JOTTA HUB, um hub estratégico de comunicação, posicionamento e produção audiovisual de Porto Alegre.
+
 A JOTTA HUB atua em:
 - Produção audiovisual (vídeos institucionais, reels, stories, cobertura de eventos)
 - Estratégia de comunicação e posicionamento
 - Fotografia institucional
 - Criação de conteúdo
 - Gestão de presença digital
-Analise o briefing fornecido e extraia/estruture as informações para preencher uma proposta comercial. Responda APENAS com um JSON válido, sem markdown, sem texto extra.`,
+- Identidade visual
+
+TABELA DE PREÇOS DA JOTTA HUB (use como base para calcular o orçamento):
+- Vídeo institucional: R$ 3.500 (produção completa)
+- Cobertura de evento corporativo: R$ 1.800 (4 a 6 horas, inclui teaser para redes sociais)
+- Reels / Stories (pacote): R$ 1.500
+- Fotografia (sessão): R$ 1.200 a R$ 1.800 dependendo da complexidade
+- Estratégia de comunicação: a partir de R$ 1.800/mês (diagnóstico, posicionamento, crescimento)
+- Gestão de redes sociais: a partir de R$ 1.800/mês
+- Identidade visual: a partir de R$ 900
+
+REGRAS DE PRECIFICAÇÃO:
+- Se o projeto tiver múltiplos dias de evento, multiplique o valor por dia
+- Se incluir mais de um tipo de serviço, some os valores
+- Se o briefing mencionar um valor fechado, use esse valor
+- Se não mencionar valor, calcule com base nos serviços identificados
+- Sempre gere uma justificativa clara do cálculo
+
+Analise o briefing e responda APENAS com um JSON válido, sem markdown, sem texto extra.`,
         messages: [{
           role: 'user',
-          content: `Analise este briefing e gere os dados para uma proposta comercial:
+          content: `Analise este briefing e gere os dados completos para uma proposta comercial, incluindo o orçamento estimado:
+
 "${briefing}"
-Retorne um JSON com esta estrutura exata (preencha todos os campos com base no briefing, inferindo quando necessário):
+
+Retorne um JSON com esta estrutura exata:
 {
   "client": "Nome da empresa/cliente",
   "contact": "Nome do contato",
   "greeting": "Olá, [nome]!",
-  "intro": "Texto de introdução personalizado para o cliente (2-3 frases)",
-  "title": "Título do projeto em caixa alta (ex: COBERTURA AUDIOVISUAL — EVENTO X)",
+  "intro": "Texto de introdução personalizado (2-3 frases)",
+  "title": "Título do projeto em caixa alta",
   "objective": "Objetivo claro do projeto (2-3 frases)",
-  "context": "Contexto estratégico do projeto (2-3 frases)",
+  "context": "Contexto estratégico (2-3 frases)",
   "pillars": [
-    {"name": "Nome do Pilar 1", "body": "Descrição do pilar"},
-    {"name": "Nome do Pilar 2", "body": "Descrição do pilar"},
-    {"name": "Nome do Pilar 3", "body": "Descrição do pilar"}
+    {"name": "Nome do Pilar", "body": "Descrição"}
   ],
   "steps": [
-    {"title": "Nome da etapa", "desc": "Descrição da etapa"},
-    {"title": "Nome da etapa", "desc": "Descrição da etapa"},
-    {"title": "Nome da etapa", "desc": "Descrição da etapa"},
-    {"title": "Nome da etapa", "desc": "Descrição da etapa"},
-    {"title": "Nome da etapa", "desc": "Descrição da etapa"}
+    {"title": "Nome da etapa", "desc": "Descrição"}
   ],
   "deliverables": [
-    {"icon": "🎬", "name": "Nome do entregável", "body": "Descrição"},
-    {"icon": "📷", "name": "Nome do entregável", "body": "Descrição"},
-    {"icon": "📱", "name": "Nome do entregável", "body": "Descrição"}
+    {"icon": "🎬", "name": "Nome do entregável", "body": "Descrição"}
   ],
   "services": [
     {"name": "Nome do serviço", "desc": "Descrição detalhada", "value": 0}
   ],
   "timeline": [
-    {"phase": "Fase 01", "name": "Nome da fase", "items": "Item 1, Item 2, Item 3"},
-    {"phase": "Fase 02", "name": "Nome da fase", "items": "Item 1, Item 2"},
-    {"phase": "Fase 03", "name": "Nome da fase", "items": "Item 1, Item 2"}
+    {"phase": "Fase 01", "name": "Nome da fase", "items": "Item 1, Item 2"}
   ],
   "validity": 5,
-  "status": "pending"
+  "status": "pending",
+  "budget": {
+    "items": [
+      {"service": "Nome do serviço", "qty": 1, "unit_price": 0, "total": 0, "note": "Justificativa"}
+    ],
+    "subtotal": 0,
+    "suggested_total": 0,
+    "justification": "Explicação resumida do cálculo em 1-2 frases",
+    "confidence": "alto",
+    "briefing_had_price": false
+  }
 }
-Para o campo "value" dos serviços, use o valor mencionado no briefing. Se não mencionado, use 0.
-Para os steps, adapte as etapas ao tipo de serviço (audiovisual, estratégia, conteúdo, etc).
-Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️📋🎯💡⭐🚀💼📢🎨.`,
+
+Regras para o campo budget:
+- "confidence": use "alto" se o briefing tinha preço definido, "medio" se os serviços são claros mas sem preço, "baixo" se o escopo é vago
+- "briefing_had_price": true se o cliente já mencionou um valor fechado
+- "suggested_total": valor total sugerido baseado na tabela de preços
+- Para qty, use o número de dias, sessões ou unidades identificadas no briefing
+- Para os services, preencha o "value" com o mesmo valor do budget.suggested_total dividido entre os itens
+
+Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️📋🎯💡⭐🚀💼📢🎨`,
         }],
       }),
     })
@@ -89,21 +116,18 @@ Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️�
     const data = await response.json()
     const text = data.content[0].text.trim()
 
-    // Parser robusto — extrai o JSON mesmo que venha com texto extra
+    // Parser robusto
     let proposal
     try {
-      // Tenta parse direto primeiro
       proposal = JSON.parse(text)
     } catch {
       try {
-        // Remove blocos markdown
         const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()
         proposal = JSON.parse(cleaned)
       } catch {
-        // Extrai o primeiro bloco JSON encontrado no texto
         const match = text.match(/\{[\s\S]*\}/)
         if (!match) {
-          console.error('Nenhum JSON encontrado na resposta:', text)
+          console.error('Nenhum JSON encontrado:', text)
           return NextResponse.json({ error: 'Erro ao processar resposta da IA' }, { status: 500 })
         }
         proposal = JSON.parse(match[0])
