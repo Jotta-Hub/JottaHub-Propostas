@@ -88,12 +88,31 @@ Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️�
 
     const data = await response.json()
     const text = data.content[0].text.trim()
-    const cleaned = text.replace(/```json|```/g, '').trim()
-    const proposal = JSON.parse(cleaned)
+
+    // Parser robusto — extrai o JSON mesmo que venha com texto extra
+    let proposal
+    try {
+      // Tenta parse direto primeiro
+      proposal = JSON.parse(text)
+    } catch {
+      try {
+        // Remove blocos markdown
+        const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()
+        proposal = JSON.parse(cleaned)
+      } catch {
+        // Extrai o primeiro bloco JSON encontrado no texto
+        const match = text.match(/\{[\s\S]*\}/)
+        if (!match) {
+          console.error('Nenhum JSON encontrado na resposta:', text)
+          return NextResponse.json({ error: 'Erro ao processar resposta da IA' }, { status: 500 })
+        }
+        proposal = JSON.parse(match[0])
+      }
+    }
 
     return NextResponse.json({ proposal })
   } catch (err) {
-    console.error(err)
+    console.error('Erro geral:', err)
     return NextResponse.json({ error: 'Erro ao processar briefing' }, { status: 500 })
   }
 }
