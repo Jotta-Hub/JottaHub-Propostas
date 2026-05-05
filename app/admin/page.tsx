@@ -493,13 +493,12 @@ export default function AdminPage() {
                         <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
                         <button className="action-btn" onClick={() => copyLink(p.id!)}>Link</button>
                         <button className="action-btn" onClick={() => openModal(p)}>Editar</button>
-                        {p.status === 'approved' && (
+                        {p.status === 'approved' && signatures.some(s => s.proposal_id === p.id && s.signer_role === 'client') && (
                           <button className="action-btn" style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.3)' }} onClick={() => window.open(`/api/contract-pdf?id=${p.id}`, '_blank')}>Contrato</button>
                         )}
                         <select className="action-btn" value={p.status} onChange={e => updateStatus(p.id!, e.target.value as Proposal['status'])} style={{ appearance: 'none', textAlign: 'center' }}>
                           <option value="pending">Rascunho</option>
                           <option value="sent">Enviada</option>
-                          <option value="approved">Aprovada</option>
                           <option value="expired">Expirada</option>
                         </select>
                         <button className="action-btn" style={{ color: '#888', borderColor: '#2E2E2E' }} onClick={() => archiveProposal(p.id!)}>Arq.</button>
@@ -650,7 +649,7 @@ export default function AdminPage() {
               <hr className="form-divider" />
               <div className="form-section-label">Condições</div>
               <div className="form-group"><label className="form-label">Validade (dias úteis)</label><input className="form-input" type="number" min={1} max={60} value={form.validity} onChange={e => setForm(x => ({ ...x, validity: parseInt(e.target.value) || 5 }))} /></div>
-              <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={form.status} onChange={e => setForm(x => ({ ...x, status: e.target.value as Proposal['status'] }))}><option value="pending">Rascunho</option><option value="sent">Enviada</option><option value="approved">Aprovada</option><option value="expired">Expirada</option></select></div>
+              <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={form.status} onChange={e => setForm(x => ({ ...x, status: e.target.value as Proposal['status'] }))}><option value="pending">Rascunho</option><option value="sent">Enviada</option><option value="expired">Expirada</option></select></div>
             </div>
 
             <div className="form-actions">
