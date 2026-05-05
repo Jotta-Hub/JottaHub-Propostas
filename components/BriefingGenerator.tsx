@@ -2,6 +2,23 @@
 
 import { useState } from 'react'
 
+type BudgetItem = {
+  service: string
+  qty: number
+  unit_price: number
+  total: number
+  note: string
+}
+
+type Budget = {
+  items: BudgetItem[]
+  subtotal: number
+  suggested_total: number
+  justification: string
+  confidence: 'alto' | 'medio' | 'baixo'
+  briefing_had_price: boolean
+}
+
 type ProposalData = {
   client: string
   contact: string
@@ -17,6 +34,7 @@ type ProposalData = {
   timeline: { phase: string; name: string; items: string }[]
   validity: number
   status: string
+  budget?: Budget
 }
 
 type Props = {
@@ -41,10 +59,21 @@ const EXAMPLES = [
 const LOADING_STEPS = [
   'Analisando o briefing...',
   'Identificando cliente e escopo...',
+  'Calculando orçamento...',
   'Estruturando entregáveis...',
   'Montando cronograma...',
   'Finalizando proposta...',
 ]
+
+function fmtBRL(v: number) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
+}
+
+const confidenceLabel: Record<string, { label: string; color: string }> = {
+  alto: { label: 'Alta precisão', color: '#22c55e' },
+  medio: { label: 'Estimativa', color: '#f59e0b' },
+  baixo: { label: 'Escopo vago', color: '#888' },
+}
 
 export default function BriefingGenerator({ onGenerated }: Props) {
   const [open, setOpen] = useState(false)
@@ -53,6 +82,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
   const [loadingText, setLoadingText] = useState('')
   const [error, setError] = useState('')
   const [result, setResult] = useState<ProposalData | null>(null)
+  const [usePrice, setUsePrice] = useState(true)
 
   async function generate() {
     if (!briefing.trim()) { setError('Cole o briefing do cliente primeiro.'); return }
@@ -72,21 +102,36 @@ export default function BriefingGenerator({ onGenerated }: Props) {
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Erro ao gerar proposta.'); return }
       setResult(data.proposal)
+      // Se o briefing já tinha preço, não precisa usar o sugerido
+      if (data.proposal?.budget?.briefing_had_price) {
+        setUsePrice(false)
+      }
     } catch { setError('Erro de conexão. Tente novamente.') }
     finally { clearInterval(interval); setLoading(false) }
   }
 
   function useProposal() {
     if (!result) return
-    onGenerated(result)
+    const finalProposal = { ...result }
+
+    // Se optou por usar o preço sugerido, aplica nos services
+    if (usePrice && result.budget?.suggested_total) {
+      finalProposal.services = result.services?.map((s, i) => ({
+        ...s,
+        value: i === 0 ? result.budget!.suggested_total : s.value,
+      })) || []
+    }
+
+    onGenerated(finalProposal)
     setOpen(false)
     setResult(null)
     setBriefing('')
   }
 
+  const budget = result?.budget
+
   return (
     <>
-      {/* Botão trigger */}
       <button
         onClick={() => setOpen(true)}
         style={{
@@ -98,19 +143,12 @@ export default function BriefingGenerator({ onGenerated }: Props) {
           border: '1px dashed rgba(232,50,26,0.4)',
           cursor: 'pointer', transition: 'all 0.2s',
         }}
-        onMouseOver={e => {
-          e.currentTarget.style.borderColor = 'var(--red)'
-          e.currentTarget.style.color = 'var(--red)'
-        }}
-        onMouseOut={e => {
-          e.currentTarget.style.borderColor = 'rgba(232,50,26,0.4)'
-          e.currentTarget.style.color = 'var(--mid)'
-        }}
+        onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(232,50,26,0.4)'; e.currentTarget.style.color = 'var(--mid)' }}
       >
         ✦ Gerar com IA
       </button>
 
-      {/* Modal */}
       {open && (
         <div
           onClick={() => !loading && setOpen(false)}
@@ -124,7 +162,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
             onClick={e => e.stopPropagation()}
             style={{
               background: 'var(--gray)', border: '1px solid var(--gray2)',
-              borderRadius: 4, width: '100%', maxWidth: 640,
+              borderRadius: 4, width: '100%', maxWidth: 660,
               maxHeight: '90vh', overflow: 'auto',
               animation: 'modalIn 0.28s ease',
             }}
@@ -142,39 +180,26 @@ export default function BriefingGenerator({ onGenerated }: Props) {
             </div>
 
             <div style={{ padding: '22px 28px 28px' }}>
-              {/* Textarea */}
               <textarea
                 value={briefing}
                 onChange={e => setBriefing(e.target.value)}
-                placeholder="Ex: 'O cliente me pediu cobertura de foto e vídeo pra um evento de 3 dias, dias 14, 15 e 16 de maio. Querem vídeo institucional, reels, stories e fotos. Somos 2 pessoas + drone. Valor fechamos em R$ 4.650...'"
+                placeholder="Ex: 'O cliente me pediu cobertura de foto e vídeo pra um evento de 3 dias...'"
                 disabled={loading}
                 style={{
                   width: '100%', minHeight: 120, background: 'var(--black)',
                   border: '1px solid var(--gray3)', color: 'var(--white)',
                   fontFamily: 'var(--fb)', fontSize: '0.87rem', fontWeight: 300,
                   padding: '12px 14px', borderRadius: 2, outline: 'none',
-                  resize: 'vertical', lineHeight: 1.7,
-                  opacity: loading ? 0.5 : 1,
+                  resize: 'vertical', lineHeight: 1.7, opacity: loading ? 0.5 : 1,
                 }}
               />
 
-              {/* Exemplos */}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10, marginBottom: 16 }}>
                 {EXAMPLES.map(ex => (
-                  <button
-                    key={ex.label}
-                    onClick={() => setBriefing(ex.text)}
-                    disabled={loading}
-                    style={{
-                      fontSize: '0.72rem', color: 'var(--mid)', background: 'var(--gray2)',
-                      padding: '5px 10px', borderRadius: 2, cursor: 'pointer',
-                      border: '1px solid var(--gray3)', transition: 'all 0.2s',
-                    }}
-                  >{ex.label}</button>
+                  <button key={ex.label} onClick={() => setBriefing(ex.text)} disabled={loading} style={{ fontSize: '0.72rem', color: 'var(--mid)', background: 'var(--gray2)', padding: '5px 10px', borderRadius: 2, cursor: 'pointer', border: '1px solid var(--gray3)' }}>{ex.label}</button>
                 ))}
               </div>
 
-              {/* Loading */}
               {loading && (
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ height: 2, background: 'var(--gray2)', borderRadius: 1, overflow: 'hidden', marginBottom: 10 }}>
@@ -187,79 +212,122 @@ export default function BriefingGenerator({ onGenerated }: Props) {
                 </div>
               )}
 
-              {/* Erro */}
               {error && (
                 <div style={{ background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 14 }}>
                   ⚠ {error}
                 </div>
               )}
 
-              {/* Resultado */}
               {result && !loading && (
-                <div style={{ background: 'var(--black)', border: '1px solid var(--gray2)', borderRadius: 3, overflow: 'hidden', marginBottom: 16 }}>
-                  <div style={{ padding: '12px 18px', background: 'rgba(232,50,26,0.06)', borderBottom: '1px solid var(--gray2)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--red)' }}>
-                    ✦ Proposta gerada — revise antes de usar
+                <>
+                  {/* Preview da proposta */}
+                  <div style={{ background: 'var(--black)', border: '1px solid var(--gray2)', borderRadius: 3, overflow: 'hidden', marginBottom: 16 }}>
+                    <div style={{ padding: '12px 18px', background: 'rgba(232,50,26,0.06)', borderBottom: '1px solid var(--gray2)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--red)' }}>
+                      ✦ Proposta gerada — revise antes de usar
+                    </div>
+                    <div style={{ padding: '16px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      {[['Cliente', result.client], ['Contato', result.contact]].map(([k, v]) => (
+                        <div key={k}>
+                          <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>{k}</div>
+                          <div style={{ background: 'rgba(232,50,26,0.05)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{v}</div>
+                        </div>
+                      ))}
+                      <div style={{ gridColumn: '1/-1' }}>
+                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>Título</div>
+                        <div style={{ background: 'rgba(232,50,26,0.05)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{result.title}</div>
+                      </div>
+                      <div style={{ gridColumn: '1/-1' }}>
+                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>Entregáveis ({result.deliverables?.length || 0})</div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--mid)', lineHeight: 1.7 }}>{result.deliverables?.map(d => `${d.icon} ${d.name}`).join(' · ')}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ padding: '16px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    {[
-                      ['Cliente', result.client],
-                      ['Contato', result.contact],
-                    ].map(([k, v]) => (
-                      <div key={k}>
-                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>{k}</div>
-                        <div style={{ background: 'rgba(232,50,26,0.05)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{v}</div>
+
+                  {/* PAINEL DE ORÇAMENTO */}
+                  {budget && (
+                    <div style={{ background: 'var(--black)', border: '1px solid var(--gray2)', borderRadius: 3, overflow: 'hidden', marginBottom: 16 }}>
+                      <div style={{ padding: '12px 18px', background: 'rgba(34,197,94,0.06)', borderBottom: '1px solid var(--gray2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#22c55e' }}>
+                          💰 Orçamento Estimado
+                        </span>
+                        {budget.confidence && (
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: confidenceLabel[budget.confidence]?.color, background: 'rgba(0,0,0,0.3)', padding: '3px 8px', borderRadius: 2 }}>
+                            {confidenceLabel[budget.confidence]?.label}
+                          </span>
+                        )}
                       </div>
-                    ))}
-                    <div style={{ gridColumn: '1/-1' }}>
-                      <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>Título</div>
-                      <div style={{ background: 'rgba(232,50,26,0.05)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{result.title}</div>
-                    </div>
-                    <div style={{ gridColumn: '1/-1' }}>
-                      <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>Entregáveis ({result.deliverables?.length || 0})</div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--mid)', lineHeight: 1.7 }}>
-                        {result.deliverables?.map(d => `${d.icon} ${d.name}`).join(' · ')}
-                      </div>
-                    </div>
-                    {result.services?.[0] && (
-                      <div style={{ gridColumn: '1/-1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)' }}>Valor detectado</div>
-                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.3rem', color: result.services[0].value > 0 ? 'var(--red)' : 'var(--mid)' }}>
-                          {result.services[0].value > 0
-                            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(result.services[0].value)
-                            : 'Não informado'}
+
+                      <div style={{ padding: '16px 18px' }}>
+                        {/* Itens do orçamento */}
+                        {budget.items?.length > 0 && (
+                          <div style={{ marginBottom: 14 }}>
+                            {budget.items.map((item, i) => (
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '8px 0', borderBottom: '1px solid #1A1A1A', gap: 12 }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: 2 }}>{item.service}</div>
+                                  {item.note && <div style={{ fontSize: '0.7rem', color: '#666' }}>{item.note}</div>}
+                                </div>
+                                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                  {item.qty > 1 && <div style={{ fontSize: '0.68rem', color: '#666', marginBottom: 2 }}>{item.qty}x {fmtBRL(item.unit_price)}</div>}
+                                  <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--white)' }}>{fmtBRL(item.total)}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Total sugerido */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                          <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--mid)' }}>
+                            {budget.briefing_had_price ? 'Valor do Cliente' : 'Valor Sugerido'}
+                          </span>
+                          <span style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.4rem', color: '#22c55e' }}>
+                            {fmtBRL(budget.suggested_total)}
+                          </span>
+                        </div>
+
+                        {/* Justificativa */}
+                        {budget.justification && (
+                          <div style={{ fontSize: '0.74rem', color: '#666', lineHeight: 1.6, marginBottom: 14, padding: '8px 12px', background: '#0A0A0A', borderRadius: 2, borderLeft: '2px solid #2E2E2E' }}>
+                            {budget.justification}
+                          </div>
+                        )}
+
+                        {/* Toggle usar valor na proposta */}
+                        <div
+                          onClick={() => setUsePrice(v => !v)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', background: usePrice ? 'rgba(34,197,94,0.08)' : '#0A0A0A', border: `1px solid ${usePrice ? 'rgba(34,197,94,0.3)' : '#2E2E2E'}`, borderRadius: 2, transition: 'all 0.2s' }}
+                        >
+                          <div style={{ width: 18, height: 18, borderRadius: 3, background: usePrice ? '#22c55e' : 'transparent', border: `2px solid ${usePrice ? '#22c55e' : '#444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0 }}>
+                            {usePrice && <span style={{ color: '#000', fontSize: '0.7rem', fontWeight: 900 }}>✓</span>}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: usePrice ? '#22c55e' : 'var(--mid)' }}>
+                              Usar este valor na proposta
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: '#555', marginTop: 1 }}>
+                              {usePrice ? `${fmtBRL(budget.suggested_total)} será aplicado nos serviços` : 'Você preencherá o valor manualmente'}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  )}
+                </>
               )}
 
-              {/* Botões */}
               <div style={{ display: 'flex', gap: 10 }}>
                 {result && !loading ? (
                   <>
-                    <button onClick={useProposal} style={{
-                      flex: 1, background: 'var(--red)', color: 'var(--white)',
-                      fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.83rem',
-                      letterSpacing: '0.1em', textTransform: 'uppercase',
-                      padding: 13, borderRadius: 2, border: 'none', cursor: 'pointer',
-                    }}>Usar esta proposta →</button>
-                    <button onClick={() => { setResult(null); generate() }} style={{
-                      background: 'transparent', color: 'var(--mid)',
-                      fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.78rem',
-                      letterSpacing: '0.1em', textTransform: 'uppercase',
-                      padding: '13px 16px', borderRadius: 2, border: '1px solid var(--gray3)', cursor: 'pointer',
-                    }}>↺ Gerar novamente</button>
+                    <button onClick={useProposal} style={{ flex: 1, background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.83rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: 13, borderRadius: 2, border: 'none', cursor: 'pointer' }}>
+                      Usar esta proposta →
+                    </button>
+                    <button onClick={() => { setResult(null); generate() }} style={{ background: 'transparent', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '13px 16px', borderRadius: 2, border: '1px solid var(--gray3)', cursor: 'pointer' }}>
+                      ↺ Gerar novamente
+                    </button>
                   </>
                 ) : (
-                  <button onClick={generate} disabled={loading} style={{
-                    flex: 1, background: 'var(--red)', color: 'var(--white)',
-                    fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.83rem',
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    padding: 13, borderRadius: 2, border: 'none',
-                    cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  }}>
+                  <button onClick={generate} disabled={loading} style={{ flex: 1, background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.83rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: 13, borderRadius: 2, border: 'none', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     {loading ? loadingText : '✦ Gerar com IA'}
                   </button>
                 )}
