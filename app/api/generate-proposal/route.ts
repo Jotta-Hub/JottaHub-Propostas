@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-20240307',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2000,
         system: `Você é um assistente especializado em criar propostas comerciais para a JOTTA HUB, um hub estratégico de comunicação, posicionamento e produção audiovisual de Porto Alegre.
 A JOTTA HUB atua em:
