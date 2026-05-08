@@ -128,6 +128,9 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
       }
     }
 
+    // Gera protocolo único
+    const protocol = `JH-${Date.now().toString(36).toUpperCase().slice(-6)}`
+
     // Salva proposta no Supabase como rascunho
     const { data: savedProposal, error: saveError } = await supabase
       .from('proposals')
@@ -136,6 +139,7 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
         status: 'pending',
         source: 'briefing_externo',
         briefing_raw: fullBriefing,
+        protocol,
       })
       .select()
       .single()
@@ -144,9 +148,6 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
       console.error('Supabase error:', saveError)
       return NextResponse.json({ error: 'Erro ao salvar proposta' }, { status: 500 })
     }
-
-    // Gera protocolo
-    const protocol = `JH-${Date.now().toString(36).toUpperCase().slice(-6)}`
 
     // Notifica Rennan por e-mail
     await fetch('https://api.resend.com/emails', {
