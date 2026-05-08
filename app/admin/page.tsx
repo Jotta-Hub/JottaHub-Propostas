@@ -188,6 +188,10 @@ export default function AdminPage() {
     setSaving(true)
     const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, pillars, steps, deliverables, services, timeline }
     if (editingId) {
+      const original = proposals.find(p => p.id === editingId)
+      if ((original as any)?.source === 'briefing_externo') {
+        (payload as any).briefing_reviewed = true
+      }
       await supabase.from('proposals').update(payload).eq('id', editingId)
       showToast('Proposta atualizada!')
     } else {
@@ -325,7 +329,7 @@ export default function AdminPage() {
   // Dados calculados
   const activeProposals = proposals.filter(p => p.status !== 'archived')
   const archivedProposals = proposals.filter(p => p.status === 'archived')
-  const briefingProposals = proposals.filter(p => (p as any).source === 'briefing_externo' && p.status === 'pending')
+  const briefingProposals = proposals.filter(p => (p as any).source === 'briefing_externo' && !(p as any).briefing_reviewed)
   const newBriefings = briefingProposals.length
 
   const totalProposals = activeProposals.length
