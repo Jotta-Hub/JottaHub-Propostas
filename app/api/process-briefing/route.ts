@@ -217,13 +217,19 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
                   Olá, ${contact.name}! Recebemos seu briefing sobre <strong style="color:#F5F3EF;">${serviceLabel}</strong>. 
                   Nossa equipe está analisando suas informações e em breve entraremos em contato com uma proposta personalizada.
                 </p>
-                <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:14px;margin-bottom:24px;display:inline-block;">
-                  <div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:4px;">Protocolo</div>
-                  <div style="font-weight:700;font-family:monospace;font-size:0.9rem;">${protocol}</div>
+                <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:14px;margin-bottom:20px;display:inline-block;">
+                  <div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:4px;">Seu Protocolo</div>
+                  <div style="font-weight:700;font-family:monospace;font-size:1.1rem;letter-spacing:0.15em;">${protocol}</div>
                 </div>
-                <p style="font-size:0.78rem;color:#555;line-height:1.6;">
-                  Qualquer dúvida, fale com a gente pelo WhatsApp:<br/>
-                  <a href="https://wa.me/5551993009391" style="color:#E8321A;">51 99300-9391</a>
+                <p style="font-size:0.82rem;color:#aaa;line-height:1.7;margin-bottom:20px;">
+                  Use seu protocolo para acompanhar o status da proposta em tempo real.
+                </p>
+                <a href="https://propostas.jottahub.com.br/status" style="display:block;background:#E8321A;color:#F5F3EF;text-align:center;padding:13px 20px;border-radius:2px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;margin-bottom:20px;">
+                  Acompanhar minha proposta →
+                </a>
+                <p style="font-size:0.75rem;color:#444;line-height:1.6;">
+                  Ou acesse: <a href="https://propostas.jottahub.com.br/status" style="color:#E8321A;">propostas.jottahub.com.br/status</a><br/>
+                  Dúvidas? WhatsApp: <a href="https://wa.me/5551993009391" style="color:#E8321A;">51 99300-9391</a>
                 </p>
               </div>
             </div>
