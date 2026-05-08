@@ -32,7 +32,7 @@ type Payment = {
   is_retroactive?: boolean
 }
 
-type View = 'dashboard' | 'financeiro' | 'proposals'
+type View = 'dashboard' | 'briefings' | 'financeiro' | 'proposals'
 
 function fmt(d?: string) {
   if (!d) return '—'
@@ -42,14 +42,16 @@ function fmt(d?: string) {
 const PAYMENT_METHODS = ['PIX', 'Transferência', 'Cartão de crédito', 'Cartão de débito', 'Boleto', 'Outro']
 
 const statusColor: Record<string, string> = {
-  pending: '#f59e0b',
-  paid: '#22c55e',
-  overdue: '#E8321A',
+  pending: '#f59e0b', paid: '#22c55e', overdue: '#E8321A',
 }
 const statusLabel2: Record<string, string> = {
-  pending: 'A receber',
-  paid: 'Pago',
-  overdue: 'Vencido',
+  pending: 'A receber', paid: 'Pago', overdue: 'Vencido',
+}
+
+const SOURCE_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  briefing_externo: { label: '📥 Briefing', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)' },
+  briefing_interno: { label: '✦ IA Interno', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)' },
+  manual: { label: 'Manual', color: '#888', bg: 'transparent' },
 }
 
 export default function AdminPage() {
@@ -67,21 +69,14 @@ export default function AdminPage() {
   const [activeEmojiIdx, setActiveEmojiIdx] = useState<number | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all')
+  const [selectedBriefing, setSelectedBriefing] = useState<Proposal | null>(null)
 
-  // Modal financeiro — projeto retroativo
   const [finModalOpen, setFinModalOpen] = useState(false)
-  const [finForm, setFinForm] = useState({
-    project_label: '',
-    payment_method: 'PIX',
-    total: '',
-    installments: 1,
-  })
+  const [finForm, setFinForm] = useState({ project_label: '', payment_method: 'PIX', total: '', installments: 1 })
   const [finParcelas, setFinParcelas] = useState<{ description: string; amount: string; due_date: string; paid: boolean }[]>([
     { description: '', amount: '', due_date: '', paid: false },
   ])
   const [savingFin, setSavingFin] = useState(false)
-
-  // Modal NF
   const [nfModal, setNfModal] = useState<{ open: boolean; paymentId: string }>({ open: false, paymentId: '' })
 
   const [form, setForm] = useState({
@@ -237,7 +232,6 @@ export default function AdminPage() {
     fetchAll()
   }
 
-  // Financeiro — gera parcelas automáticas para proposta aprovada
   async function generatePaymentsForProposal(proposal: Proposal) {
     if (!proposal.id) return
     const existing = payments.filter(p => p.proposal_id === proposal.id)
@@ -255,15 +249,12 @@ export default function AdminPage() {
     fetchAll()
   }
 
-  // Financeiro — ajusta número de parcelas no modal retroativo
   function adjustParcelas(n: number) {
     const total = parseFloat(finForm.total) || 0
     const perParcela = n > 0 && total > 0 ? (total / n).toFixed(2) : ''
     setFinParcelas(Array.from({ length: n }, (_, i) => ({
       description: `${finForm.project_label || 'Projeto'} — Parcela ${i + 1}/${n}`,
-      amount: perParcela,
-      due_date: '',
-      paid: false,
+      amount: perParcela, due_date: '', paid: false,
     })))
     setFinForm(f => ({ ...f, installments: n }))
   }
@@ -275,14 +266,11 @@ export default function AdminPage() {
     const rows = finParcelas.map((p, i) => ({
       project_label: finForm.project_label,
       description: p.description || `${finForm.project_label} — Parcela ${i + 1}/${finParcelas.length}`,
-      amount: parseFloat(p.amount),
-      due_date: p.due_date || null,
+      amount: parseFloat(p.amount), due_date: p.due_date || null,
       status: p.paid ? 'paid' : 'pending',
       paid_at: p.paid ? (p.due_date || new Date().toISOString().slice(0, 10)) : null,
-      installment: `${i + 1}/${finParcelas.length}`,
-      payment_method: finForm.payment_method,
-      is_retroactive: true,
-      nf_emitted: false,
+      installment: `${i + 1}/${finParcelas.length}`, payment_method: finForm.payment_method,
+      is_retroactive: true, nf_emitted: false,
     }))
     await supabase.from('payments').insert(rows)
     showToast('Projeto registrado no financeiro!')
@@ -297,7 +285,6 @@ export default function AdminPage() {
     const today = new Date().toISOString().slice(0, 10)
     await supabase.from('payments').update({ status: 'paid', paid_at: today }).eq('id', id)
     fetchAll()
-    // Mostra modal de NF
     setNfModal({ open: true, paymentId: id })
   }
 
@@ -326,9 +313,21 @@ export default function AdminPage() {
     fetchAll()
   }
 
+  // Converte briefing externo em proposta enviável
+  async function convertBriefingToProposal(p: Proposal) {
+    await supabase.from('proposals').update({ status: 'pending', source: 'briefing_externo' }).eq('id', p.id!)
+    showToast('Proposta pronta para edição e envio.')
+    fetchAll()
+    setSelectedBriefing(null)
+    openModal({ ...p, status: 'pending' })
+  }
+
   // Dados calculados
   const activeProposals = proposals.filter(p => p.status !== 'archived')
   const archivedProposals = proposals.filter(p => p.status === 'archived')
+  const briefingProposals = proposals.filter(p => (p as any).source === 'briefing_externo' && p.status === 'pending')
+  const newBriefings = briefingProposals.length
+
   const totalProposals = activeProposals.length
   const sent = activeProposals.filter(p => p.status === 'sent').length
   const approved = activeProposals.filter(p => p.status === 'approved').length
@@ -348,8 +347,6 @@ export default function AdminPage() {
 
   const recentSigs = signatures.filter(s => s.signer_role === 'client').slice(0, 5)
   const ongoingProjects = activeProposals.filter(p => p.status === 'approved')
-
-  // Financeiro
   const totalReceber = payments.filter(p => p.status !== 'paid').reduce((s, p) => s + p.amount, 0)
   const totalRecebido = payments.filter(p => p.status === 'paid').reduce((s, p) => s + p.amount, 0)
   const totalVencido = payments.filter(p => p.status === 'overdue').reduce((s, p) => s + p.amount, 0)
@@ -359,6 +356,69 @@ export default function AdminPage() {
   const filteredPayments = payments.filter(p => paymentFilter === 'all' ? true : p.status === paymentFilter)
 
   if (loading) return <div className="loading-screen"><div className="loading-dot" /></div>
+
+  // Componente de card reutilizável
+  function ProposalCard({ p, archived = false }: { p: Proposal; archived?: boolean }) {
+    const tot = calcTotal(p.services)
+    const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
+    const initials = (p.client || '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+    const hasSig = signatures.some(s => s.proposal_id === p.id && s.signer_role === 'client')
+    const source = (p as any).source || 'manual'
+    const sourceInfo = SOURCE_LABELS[source]
+
+    return (
+      <div className="prop-card" style={archived ? { opacity: 0.6 } : {}} onClick={() => window.open(`/proposta/${p.id}`, '_blank')}>
+        <div className="card-top">
+          <div className="card-logo">{p.logo_url ? <img src={p.logo_url} alt={p.client} /> : <span className="card-logo-initials">{initials}</span>}</div>
+          <div className="card-info">
+            <div className="card-client">{p.client}</div>
+            <div className="card-contact">{p.contact}</div>
+            <div className="card-project">{p.title || 'Sem título'}</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            {archived
+              ? <span className="badge" style={{ background: '#1C1C1C', color: '#555', borderColor: '#2E2E2E' }}>Arquivada</span>
+              : <span className={`badge ${p.status}`}>{statusLabel(p.status)}</span>
+            }
+            {source !== 'manual' && (
+              <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '2px 6px', borderRadius: 2, background: sourceInfo.bg, color: sourceInfo.color, border: `1px solid ${sourceInfo.color}33`, whiteSpace: 'nowrap' }}>
+                {sourceInfo.label}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="card-meta">
+          {tot > 0 && <><span className="card-value">{fmtBRL(tot)}</span><span className="card-sep" /></>}
+          <span className="card-validity" style={archived ? { color: '#444' } : {}}>{archived ? 'Arquivada' : `Válida até ${fmtDate(validDate)}`}</span>
+        </div>
+        <div className="card-actions" onClick={e => e.stopPropagation()}>
+          {archived ? (
+            <>
+              <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
+              <button className="action-btn" style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.2)' }} onClick={() => unarchiveProposal(p.id!)}>Reativar</button>
+              <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
+            </>
+          ) : (
+            <>
+              <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
+              <button className="action-btn" onClick={() => copyLink(p.id!)}>Link</button>
+              <button className="action-btn" onClick={() => openModal(p)}>Editar</button>
+              {p.status === 'approved' && hasSig && (
+                <button className="action-btn" style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.3)' }} onClick={() => window.open(`/api/contract-pdf?id=${p.id}`, '_blank')}>Contrato</button>
+              )}
+              <select className="action-btn" value={p.status} onChange={e => updateStatus(p.id!, e.target.value as Proposal['status'])} style={{ appearance: 'none', textAlign: 'center' }}>
+                <option value="pending">Rascunho</option>
+                <option value="sent">Enviada</option>
+                <option value="expired">Expirada</option>
+              </select>
+              <button className="action-btn" style={{ color: '#888', borderColor: '#2E2E2E' }} onClick={() => archiveProposal(p.id!)}>Arq.</button>
+              <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -372,14 +432,22 @@ export default function AdminPage() {
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 2, background: 'var(--gray2)', borderRadius: 3, padding: 3 }}>
-            {(['dashboard', 'financeiro', 'proposals'] as View[]).map(v => (
-              <button key={v} onClick={() => setView(v)} style={{
+            {([
+              { key: 'dashboard', label: '⬛ Dashboard' },
+              { key: 'briefings', label: '📥 Briefings', badge: newBriefings },
+              { key: 'financeiro', label: '💰 Financeiro' },
+              { key: 'proposals', label: '📋 Propostas' },
+            ] as { key: View; label: string; badge?: number }[]).map(v => (
+              <button key={v.key} onClick={() => setView(v.key)} style={{
                 fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase',
-                padding: '6px 12px', borderRadius: 2, border: 'none', cursor: 'pointer',
-                background: view === v ? 'var(--red)' : 'transparent',
-                color: view === v ? 'var(--white)' : 'var(--mid)', transition: 'all 0.2s',
+                padding: '6px 12px', borderRadius: 2, border: 'none', cursor: 'pointer', position: 'relative',
+                background: view === v.key ? 'var(--red)' : 'transparent',
+                color: view === v.key ? 'var(--white)' : 'var(--mid)', transition: 'all 0.2s',
               }}>
-                {v === 'dashboard' ? '⬛ Dashboard' : v === 'financeiro' ? '💰 Financeiro' : '📋 Propostas'}
+                {v.label}
+                {v.badge && v.badge > 0 ? (
+                  <span style={{ position: 'absolute', top: 2, right: 2, background: '#a78bfa', color: '#000', borderRadius: '50%', width: 14, height: 14, fontSize: '0.55rem', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{v.badge}</span>
+                ) : null}
               </button>
             ))}
           </div>
@@ -404,8 +472,27 @@ export default function AdminPage() {
             </div>
 
             {/* ALERTAS */}
-            {(alertProposals.length > 0 || overduePayments.length > 0) && (
+            {(alertProposals.length > 0 || overduePayments.length > 0 || newBriefings > 0) && (
               <div style={{ marginBottom: 28 }}>
+                {/* Alerta de briefings novos */}
+                {newBriefings > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 3, padding: '12px 18px', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span>📥</span>
+                      <div>
+                        <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.8rem' }}>
+                          {newBriefings} briefing{newBriefings > 1 ? 's' : ''} novo{newBriefings > 1 ? 's' : ''} aguardando revisão
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--mid)', marginTop: 2 }}>
+                          Propostas geradas automaticamente pela IA a partir de briefings externos
+                        </div>
+                      </div>
+                    </div>
+                    <button className="action-btn" style={{ color: '#a78bfa', borderColor: 'rgba(167,139,250,0.3)', flex: 'unset' }} onClick={() => setView('briefings')}>
+                      Ver briefings
+                    </button>
+                  </div>
+                )}
                 {alertProposals.map(p => {
                   const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
                   return (
@@ -478,7 +565,6 @@ export default function AdminPage() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
-              {/* PROJETOS */}
               <div style={{ background: 'var(--gray)', border: '1px solid var(--gray2)', borderRadius: 3, padding: '20px 24px' }}>
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 16 }}>
                   Projetos em Andamento <span style={{ marginLeft: 8, background: '#22c55e', color: '#000', fontSize: '0.6rem', fontWeight: 900, padding: '2px 6px', borderRadius: 2 }}>{ongoingProjects.length}</span>
@@ -516,7 +602,6 @@ export default function AdminPage() {
                   })}
               </div>
 
-              {/* ATIVIDADE */}
               <div style={{ background: 'var(--gray)', border: '1px solid var(--gray2)', borderRadius: 3, padding: '20px 24px' }}>
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 16 }}>Atividade Recente</div>
                 {recentSigs.length === 0
@@ -539,6 +624,116 @@ export default function AdminPage() {
           </>
         )}
 
+        {/* ═══════ BRIEFINGS */}
+        {view === 'briefings' && (
+          <>
+            <div className="admin-header">
+              <div className="admin-header-inner">
+                <div>
+                  <h1 className="admin-title"><span className="ghost">Briefings</span><span className="red">Recebidos</span></h1>
+                  <p className="admin-sub">Propostas geradas automaticamente a partir de briefings externos</p>
+                </div>
+                <a
+                  href="/briefing"
+                  target="_blank"
+                  style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '9px 18px', borderRadius: 2, border: '1px solid var(--gray3)', background: 'transparent', color: 'var(--white)', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                >
+                  ↗ Ver página de briefing
+                </a>
+              </div>
+            </div>
+
+            {briefingProposals.length === 0 ? (
+              <div style={{ padding: '40px', textAlign: 'center' }}>
+                <div style={{ fontSize: '3rem', marginBottom: 16, opacity: 0.2 }}>📥</div>
+                <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.2rem', textTransform: 'uppercase', color: 'var(--gray3)', marginBottom: 8 }}>Nenhum briefing ainda</div>
+                <div style={{ fontSize: '0.8rem', color: '#333', marginBottom: 24 }}>Compartilhe o link da página de briefing com seus clientes</div>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/briefing`); showToast('Link copiado!') }}
+                  style={{ background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 20px', borderRadius: 2, border: 'none', cursor: 'pointer' }}
+                >
+                  Copiar link da página
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: '0 40px 40px' }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--mid)' }}>
+                    {briefingProposals.length} briefing{briefingProposals.length > 1 ? 's' : ''} aguardando revisão
+                  </span>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/briefing`); showToast('Link copiado!') }}
+                    style={{ marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--mid)', background: 'transparent', border: '1px solid var(--gray3)', borderRadius: 2, padding: '5px 10px', cursor: 'pointer', fontFamily: 'var(--fd)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}
+                  >
+                    Copiar link da página
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {briefingProposals.map(p => {
+                    const tot = calcTotal(p.services)
+                    const briefingRaw = (p as any).briefing_raw || ''
+                    return (
+                      <div key={p.id} style={{ background: 'var(--gray)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: 2, background: 'linear-gradient(90deg, #a78bfa, #60a5fa)' }} />
+                        <div style={{ padding: '20px 24px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: 200 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                                <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.05rem', textTransform: 'uppercase' }}>{p.client}</div>
+                                <span style={{ fontSize: '0.55rem', fontWeight: 700, padding: '2px 6px', borderRadius: 2, background: 'rgba(167,139,250,0.1)', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.3)' }}>📥 Briefing Externo</span>
+                              </div>
+                              <div style={{ fontSize: '0.78rem', color: 'var(--mid)', marginBottom: 8 }}>{p.title || 'Sem título'}</div>
+                              {tot > 0 && <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.1rem', color: '#a78bfa' }}>{fmtBRL(tot)}</div>}
+                            </div>
+                            <div style={{ fontSize: '0.65rem', color: '#555' }}>
+                              {p.created_at ? new Date(p.created_at).toLocaleString('pt-BR') : ''}
+                            </div>
+                          </div>
+
+                          {briefingRaw && (
+                            <div style={{ background: 'var(--black)', border: '1px solid var(--gray2)', borderRadius: 2, padding: '12px 14px', marginTop: 14, marginBottom: 14 }}>
+                              <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#555', marginBottom: 8 }}>Briefing Original</div>
+                              <pre style={{ fontSize: '0.75rem', color: '#888', whiteSpace: 'pre-wrap', fontFamily: 'inherit', lineHeight: 1.6, maxHeight: 160, overflow: 'auto' }}>{briefingRaw}</pre>
+                            </div>
+                          )}
+
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                              onClick={() => { openModal(p); setSelectedBriefing(p) }}
+                              style={{ background: '#a78bfa', color: '#000', fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 16px', borderRadius: 2, border: 'none', cursor: 'pointer' }}
+                            >
+                              Revisar e Enviar →
+                            </button>
+                            <button
+                              onClick={() => window.open(`/proposta/${p.id}`, '_blank')}
+                              style={{ background: 'transparent', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 16px', borderRadius: 2, border: '1px solid var(--gray3)', cursor: 'pointer' }}
+                            >
+                              Ver Proposta
+                            </button>
+                            <button
+                              onClick={() => copyLink(p.id!)}
+                              style={{ background: 'transparent', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 16px', borderRadius: 2, border: '1px solid var(--gray3)', cursor: 'pointer' }}
+                            >
+                              Copiar Link
+                            </button>
+                            <button
+                              onClick={() => deleteProposal(p.id!)}
+                              style={{ background: 'transparent', color: '#555', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 16px', borderRadius: 2, border: '1px solid #2E2E2E', cursor: 'pointer', marginLeft: 'auto' }}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         {/* ═══════ FINANCEIRO */}
         {view === 'financeiro' && (
           <>
@@ -548,13 +743,10 @@ export default function AdminPage() {
                   <h1 className="admin-title"><span className="ghost">Controle</span><span className="red">Financeiro</span></h1>
                   <p className="admin-sub">Parcelas, recebimentos e fluxo de caixa</p>
                 </div>
-                <button className="btn-sm red" style={{ fontSize: '.9rem', padding: '13px 26px' }} onClick={() => setFinModalOpen(true)}>
-                  + Projeto Retroativo
-                </button>
+                <button className="btn-sm red" style={{ fontSize: '.9rem', padding: '13px 26px' }} onClick={() => setFinModalOpen(true)}>+ Projeto Retroativo</button>
               </div>
             </div>
 
-            {/* MÉTRICAS FINANCEIRAS */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
               {[
                 { label: 'Total a Receber', value: fmtBRL(totalReceber), color: '#f59e0b' },
@@ -569,7 +761,6 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* AVISO PROJETOS SEM PARCELAS */}
             {ongoingProjects.filter(p => !payments.some(pay => pay.proposal_id === p.id)).length > 0 && (
               <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 3, padding: '14px 18px', marginBottom: 20 }}>
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', color: '#f59e0b', marginBottom: 10 }}>⚠ Projetos aprovados sem parcelas geradas:</div>
@@ -583,7 +774,6 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* FILTROS */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
               {(['all', 'pending', 'paid', 'overdue'] as const).map(f => (
                 <button key={f} onClick={() => setPaymentFilter(f)} style={{
@@ -598,23 +788,14 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* TABELA DE PAGAMENTOS */}
             <div style={{ background: 'var(--gray)', border: '1px solid var(--gray2)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '10px 20px', background: 'var(--gray2)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)' }}>
-                <span>Descrição</span>
-                <span>Forma</span>
-                <span>Vencimento</span>
-                <span>Parcela</span>
-                <span>Valor</span>
-                <span>Ação</span>
+                <span>Descrição</span><span>Forma</span><span>Vencimento</span><span>Parcela</span><span>Valor</span><span>Ação</span>
               </div>
-
               {filteredPayments.length === 0 ? (
                 <div style={{ padding: '32px', textAlign: 'center', color: '#444', fontSize: '0.82rem' }}>
                   Nenhum lançamento encontrado.
-                  <div style={{ marginTop: 8, fontSize: '0.72rem', color: '#555' }}>
-                    Gere parcelas para projetos aprovados ou adicione um projeto retroativo.
-                  </div>
+                  <div style={{ marginTop: 8, fontSize: '0.72rem', color: '#555' }}>Gere parcelas para projetos aprovados ou adicione um projeto retroativo.</div>
                 </div>
               ) : filteredPayments.map(pay => (
                 <div key={pay.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr auto', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--gray2)', alignItems: 'center' }}>
@@ -624,40 +805,20 @@ export default function AdminPage() {
                       {pay.is_retroactive && <span style={{ fontSize: '0.6rem', color: '#888', background: '#1C1C1C', padding: '1px 6px', borderRadius: 2 }}>Retroativo</span>}
                       {pay.nf_emitted && <span style={{ fontSize: '0.6rem', color: '#22c55e', background: 'rgba(34,197,94,0.08)', padding: '1px 6px', borderRadius: 2 }}>NF emitida</span>}
                       {pay.status === 'paid' && !pay.nf_emitted && (
-                        <button onClick={() => setNfModal({ open: true, paymentId: pay.id! })} style={{ fontSize: '0.6rem', color: '#f59e0b', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', padding: '1px 6px', borderRadius: 2, cursor: 'pointer' }}>
-                          Emitir NF
-                        </button>
+                        <button onClick={() => setNfModal({ open: true, paymentId: pay.id! })} style={{ fontSize: '0.6rem', color: '#f59e0b', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', padding: '1px 6px', borderRadius: 2, cursor: 'pointer' }}>Emitir NF</button>
                       )}
                     </div>
-                    {pay.status === 'paid' && pay.paid_at && (
-                      <div style={{ fontSize: '0.68rem', color: '#22c55e', marginTop: 2 }}>Pago em {fmt(pay.paid_at)}</div>
-                    )}
+                    {pay.status === 'paid' && pay.paid_at && <div style={{ fontSize: '0.68rem', color: '#22c55e', marginTop: 2 }}>Pago em {fmt(pay.paid_at)}</div>}
                   </div>
-
-                  <select
-                    value={pay.payment_method || 'PIX'}
-                    onChange={e => updatePaymentField(pay.id!, 'payment_method', e.target.value)}
-                    disabled={pay.status === 'paid'}
-                    style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: 'var(--mid)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }}
-                  >
+                  <select value={pay.payment_method || 'PIX'} onChange={e => updatePaymentField(pay.id!, 'payment_method', e.target.value)} disabled={pay.status === 'paid'} style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: 'var(--mid)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }}>
                     {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
-
-                  <input
-                    type="date"
-                    value={pay.due_date || ''}
-                    onChange={e => updatePaymentField(pay.id!, 'due_date', e.target.value)}
-                    disabled={pay.status === 'paid'}
-                    style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: pay.status === 'overdue' ? '#E8321A' : 'var(--white)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }}
-                  />
-
+                  <input type="date" value={pay.due_date || ''} onChange={e => updatePaymentField(pay.id!, 'due_date', e.target.value)} disabled={pay.status === 'paid'} style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: pay.status === 'overdue' ? '#E8321A' : 'var(--white)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }} />
                   <span style={{ fontSize: '0.75rem', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700 }}>{pay.installment}</span>
-
                   <div>
                     <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '0.9rem', color: statusColor[pay.status] }}>{fmtBRL(pay.amount)}</div>
                     <div style={{ fontSize: '0.62rem', color: statusColor[pay.status], marginTop: 2 }}>{statusLabel2[pay.status]}</div>
                   </div>
-
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                     {pay.status !== 'paid'
                       ? <button onClick={() => markPaid(pay.id!)} style={{ background: '#22c55e', color: '#000', fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 10px', borderRadius: 2, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>✓ Pago</button>
@@ -705,44 +866,7 @@ export default function AdminPage() {
                     <div className="empty-title">Nenhuma proposta ainda</div>
                     <div className="empty-sub">Clique em "Nova Proposta" para começar</div>
                   </div>
-                ) : activeProposals.map(p => {
-                  const tot = calcTotal(p.services)
-                  const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
-                  const initials = (p.client || '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
-                  const hasSig = signatures.some(s => s.proposal_id === p.id && s.signer_role === 'client')
-                  return (
-                    <div key={p.id} className="prop-card" onClick={() => window.open(`/proposta/${p.id}`, '_blank')}>
-                      <div className="card-top">
-                        <div className="card-logo">{p.logo_url ? <img src={p.logo_url} alt={p.client} /> : <span className="card-logo-initials">{initials}</span>}</div>
-                        <div className="card-info">
-                          <div className="card-client">{p.client}</div>
-                          <div className="card-contact">{p.contact}</div>
-                          <div className="card-project">{p.title || 'Sem título'}</div>
-                        </div>
-                        <span className={`badge ${p.status}`}>{statusLabel(p.status)}</span>
-                      </div>
-                      <div className="card-meta">
-                        {tot > 0 && <><span className="card-value">{fmtBRL(tot)}</span><span className="card-sep" /></>}
-                        <span className="card-validity">Válida até {fmtDate(validDate)}</span>
-                      </div>
-                      <div className="card-actions" onClick={e => e.stopPropagation()}>
-                        <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
-                        <button className="action-btn" onClick={() => copyLink(p.id!)}>Link</button>
-                        <button className="action-btn" onClick={() => openModal(p)}>Editar</button>
-                        {p.status === 'approved' && hasSig && (
-                          <button className="action-btn" style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.3)' }} onClick={() => window.open(`/api/contract-pdf?id=${p.id}`, '_blank')}>Contrato</button>
-                        )}
-                        <select className="action-btn" value={p.status} onChange={e => updateStatus(p.id!, e.target.value as Proposal['status'])} style={{ appearance: 'none', textAlign: 'center' }}>
-                          <option value="pending">Rascunho</option>
-                          <option value="sent">Enviada</option>
-                          <option value="expired">Expirada</option>
-                        </select>
-                        <button className="action-btn" style={{ color: '#888', borderColor: '#2E2E2E' }} onClick={() => archiveProposal(p.id!)}>Arq.</button>
-                        <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
-                      </div>
-                    </div>
-                  )
-                })}
+                ) : activeProposals.map(p => <ProposalCard key={p.id} p={p} />)}
               </div>
             </div>
 
@@ -757,32 +881,7 @@ export default function AdminPage() {
                 </div>
                 {showArchived && (
                   <div className="cards-grid" style={{ marginTop: 16 }}>
-                    {archivedProposals.map(p => {
-                      const tot = calcTotal(p.services)
-                      const initials = (p.client || '?').split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
-                      return (
-                        <div key={p.id} className="prop-card" style={{ opacity: 0.6 }} onClick={() => window.open(`/proposta/${p.id}`, '_blank')}>
-                          <div className="card-top">
-                            <div className="card-logo">{p.logo_url ? <img src={p.logo_url} alt={p.client} /> : <span className="card-logo-initials">{initials}</span>}</div>
-                            <div className="card-info">
-                              <div className="card-client">{p.client}</div>
-                              <div className="card-contact">{p.contact}</div>
-                              <div className="card-project">{p.title || 'Sem título'}</div>
-                            </div>
-                            <span className="badge" style={{ background: '#1C1C1C', color: '#555', borderColor: '#2E2E2E' }}>Arquivada</span>
-                          </div>
-                          <div className="card-meta">
-                            {tot > 0 && <><span className="card-value">{fmtBRL(tot)}</span><span className="card-sep" /></>}
-                            <span className="card-validity" style={{ color: '#444' }}>Arquivada</span>
-                          </div>
-                          <div className="card-actions" onClick={e => e.stopPropagation()}>
-                            <Link href={`/proposta/${p.id}`} target="_blank" className="action-btn view-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Ver</Link>
-                            <button className="action-btn" style={{ color: '#22c55e', borderColor: 'rgba(34,197,94,0.2)' }} onClick={() => unarchiveProposal(p.id!)}>Reativar</button>
-                            <button className="action-btn del-btn" onClick={() => deleteProposal(p.id!)}>Del</button>
-                          </div>
-                        </div>
-                      )
-                    })}
+                    {archivedProposals.map(p => <ProposalCard key={p.id} p={p} archived />)}
                   </div>
                 )}
               </div>
@@ -818,7 +917,7 @@ export default function AdminPage() {
                 <label className="form-label">Logo do Cliente</label>
                 <div className="logo-upload-area" onClick={() => fileInputRef.current?.click()}>
                   <div className="logo-preview-box">{logoPreview ? <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span className="logo-placeholder">🏢</span>}</div>
-                  <div className="logo-upload-text"><strong>Clique para enviar a logo</strong>PNG, JPG ou SVG — aparece no hero da proposta</div>
+                  <div className="logo-upload-text"><strong>Clique para enviar a logo</strong>PNG, JPG ou SVG</div>
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoUpload} />
                 <div className="logo-display-row">
@@ -827,7 +926,6 @@ export default function AdminPage() {
                     <button className={`toggle-opt${logoMode === 'original' ? ' active' : ''}`} onClick={() => setLogoMode('original')}>Original</button>
                     <button className={`toggle-opt${logoMode === 'white' ? ' active' : ''}`} onClick={() => setLogoMode('white')}>Branca</button>
                   </div>
-                  <span className="logo-display-label" style={{ fontSize: '0.68rem' }}>(use "Branca" se a logo for escura)</span>
                 </div>
               </div>
               {[{ id: 'client', label: 'Nome da Empresa *', placeholder: 'Cora Centro Pesquisa' }, { id: 'contact', label: 'Nome do Contato', placeholder: 'Dra. Karen' }].map(f => (
@@ -918,7 +1016,6 @@ export default function AdminPage() {
                   </select>
                 </div>
               </div>
-
               <div>
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 10 }}>Parcelas</div>
                 {finParcelas.map((p, i) => (
@@ -926,10 +1023,7 @@ export default function AdminPage() {
                     <input className="form-input" placeholder={`Descrição parcela ${i + 1}`} value={p.description} onChange={e => setFinParcelas(x => x.map((it, j) => j === i ? { ...it, description: e.target.value } : it))} />
                     <input className="form-input" type="number" placeholder="Valor" value={p.amount} onChange={e => setFinParcelas(x => x.map((it, j) => j === i ? { ...it, amount: e.target.value } : it))} />
                     <input className="form-input" type="date" value={p.due_date} onChange={e => setFinParcelas(x => x.map((it, j) => j === i ? { ...it, due_date: e.target.value } : it))} />
-                    <div
-                      onClick={() => setFinParcelas(x => x.map((it, j) => j === i ? { ...it, paid: !it.paid } : it))}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '6px 10px', borderRadius: 2, border: `1px solid ${p.paid ? 'rgba(34,197,94,0.4)' : 'var(--gray3)'}`, background: p.paid ? 'rgba(34,197,94,0.08)' : 'transparent', whiteSpace: 'nowrap' }}
-                    >
+                    <div onClick={() => setFinParcelas(x => x.map((it, j) => j === i ? { ...it, paid: !it.paid } : it))} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '6px 10px', borderRadius: 2, border: `1px solid ${p.paid ? 'rgba(34,197,94,0.4)' : 'var(--gray3)'}`, background: p.paid ? 'rgba(34,197,94,0.08)' : 'transparent', whiteSpace: 'nowrap' }}>
                       <div style={{ width: 14, height: 14, borderRadius: 2, background: p.paid ? '#22c55e' : 'transparent', border: `2px solid ${p.paid ? '#22c55e' : '#444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {p.paid && <span style={{ color: '#000', fontSize: '0.6rem', fontWeight: 900 }}>✓</span>}
                       </div>
@@ -938,7 +1032,6 @@ export default function AdminPage() {
                   </div>
                 ))}
               </div>
-
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                 <button onClick={() => setFinModalOpen(false)} className="btn-sm ghost">Cancelar</button>
                 <button onClick={saveRetroactiveProject} disabled={savingFin} className="btn-main">{savingFin ? 'Salvando...' : 'Registrar Projeto →'}</button>
@@ -958,23 +1051,14 @@ export default function AdminPage() {
               Pagamento registrado com sucesso. Lembre de emitir a nota fiscal correspondente pelo emissor nacional do governo.
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                onClick={() => { window.open('https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional', '_blank'); markNfEmitted(nfModal.paymentId) }}
-                style={{ flex: 1, background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: 13, borderRadius: 2, border: 'none', cursor: 'pointer' }}
-              >
+              <button onClick={() => { window.open('https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional', '_blank'); markNfEmitted(nfModal.paymentId) }} style={{ flex: 1, background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)', fontWeight: 800, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: 13, borderRadius: 2, border: 'none', cursor: 'pointer' }}>
                 Emitir NF →
               </button>
-              <button
-                onClick={() => setNfModal({ open: false, paymentId: '' })}
-                style={{ flex: 1, background: 'transparent', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: 13, borderRadius: 2, border: '1px solid var(--gray3)', cursor: 'pointer' }}
-              >
+              <button onClick={() => setNfModal({ open: false, paymentId: '' })} style={{ flex: 1, background: 'transparent', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: 13, borderRadius: 2, border: '1px solid var(--gray3)', cursor: 'pointer' }}>
                 Emitir depois
               </button>
             </div>
-            <button
-              onClick={() => markNfEmitted(nfModal.paymentId)}
-              style={{ marginTop: 10, width: '100%', background: 'transparent', color: '#555', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px', borderRadius: 2, border: 'none', cursor: 'pointer' }}
-            >
+            <button onClick={() => markNfEmitted(nfModal.paymentId)} style={{ marginTop: 10, width: '100%', background: 'transparent', color: '#555', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px', borderRadius: 2, border: 'none', cursor: 'pointer' }}>
               Já emiti — marcar como emitida
             </button>
           </div>
