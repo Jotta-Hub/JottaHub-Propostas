@@ -293,19 +293,41 @@ export default function BriefingPage() {
                 Recebemos tudo!
               </h2>
               <p style={{ fontSize: '0.9rem', color: '#888', lineHeight: 1.8, maxWidth: 400, margin: '0 auto 32px' }}>
-                Seu briefing foi processado e uma proposta personalizada está sendo preparada. Entraremos em contato em breve.
+                Seu briefing foi processado. Acompanhe o status da sua proposta usando o protocolo abaixo.
               </p>
+
               {protocol && (
-                <div style={{ background: '#111', border: '1px solid #2E2E2E', borderRadius: 3, padding: '16px 20px', display: 'inline-block', marginBottom: 32 }}>
-                  <div style={{ fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#888', marginBottom: 4 }}>Protocolo</div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#F5F3EF', fontFamily: 'monospace' }}>{protocol}</div>
+                <div style={{ background: '#111', border: '1px solid #2E2E2E', borderRadius: 3, padding: '20px 24px', marginBottom: 24 }}>
+                  <div style={{ fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#888', marginBottom: 8 }}>Seu Protocolo</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.4rem', color: '#F5F3EF', fontFamily: 'monospace', letterSpacing: '0.15em', marginBottom: 4 }}>{protocol}</div>
+                  <div style={{ fontSize: '0.72rem', color: '#555' }}>Guarde este código — você vai precisar dele para acompanhar a proposta</div>
                 </div>
               )}
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a href="https://wa.me/5551993009391" target="_blank" style={{ background: '#E8321A', color: '#F5F3EF', padding: '12px 24px', borderRadius: 2, fontWeight: 700, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none' }}>
-                  Falar pelo WhatsApp
-                </a>
-              </div>
+
+              <a
+                href="/status"
+                style={{
+                  display: 'block', background: '#E8321A', color: '#F5F3EF',
+                  padding: '14px', borderRadius: 2, fontWeight: 800, fontSize: '0.85rem',
+                  letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
+                  marginBottom: 10,
+                }}
+              >
+                Acompanhar minha proposta →
+              </a>
+
+              <a
+                href="https://wa.me/5551993009391"
+                target="_blank"
+                style={{
+                  display: 'block', background: 'transparent', color: '#888',
+                  padding: '12px', borderRadius: 2, fontWeight: 700, fontSize: '0.78rem',
+                  letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
+                  border: '1px solid #2E2E2E',
+                }}
+              >
+                Falar pelo WhatsApp
+              </a>
             </div>
           )}
         </div>
