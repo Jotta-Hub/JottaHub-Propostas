@@ -27,6 +27,7 @@ const SERVICE_LABELS: Record<string, string> = {
   gestao_redes: 'Gestão de Redes Sociais',
   estrategia: 'Estratégia de Comunicação',
   audiovisual: 'Produção Audiovisual',
+  software: 'Software & Sistemas sob medida com IA',
   outro: 'Projeto Personalizado',
 }
 
@@ -78,6 +79,7 @@ A JOTTA HUB oferece:
 - Gestão de redes sociais: estratégia e conteúdo. Valor: a partir de R$ 1.800/mês
 - Estratégia de comunicação: posicionamento, narrativa, plano. Valor: a partir de R$ 1.800/mês
 - Produção audiovisual: vídeos institucionais R$ 3.500, cobertura de evento R$ 1.800, reels/stories R$ 1.500
+- Software & sistemas sob medida com IA: produtos digitais personalizados, automações, integrações (WhatsApp, agenda, pagamentos) e agentes de inteligência artificial. Valor: a partir de R$ 5.000 de setup + mensalidade de manutenção/evolução (a partir de R$ 500/mês)
 
 Analise o briefing e gere uma proposta comercial personalizada. Responda APENAS com JSON válido, sem markdown.`,
         messages: [{
