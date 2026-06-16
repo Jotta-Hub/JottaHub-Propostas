@@ -6,6 +6,20 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// CORS: o briefing oficial mora no CRM (crm.jottahub.com.br) e chama este
+// motor cross-origin. Liberado pra qualquer origem (endpoint já é público).
+const cors: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+function respond(data: unknown, init?: { status?: number }) {
+  return NextResponse.json(data, { status: init?.status ?? 200, headers: cors })
+}
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: cors })
+}
+
 const SERVICE_LABELS: Record<string, string> = {
   hora_certa: 'Hora Certa — Sistema de Agendamento',
   identidade_visual: 'Identidade Visual',
@@ -21,12 +35,12 @@ export async function POST(req: NextRequest) {
     const { service, answers, contact } = await req.json()
 
     if (!service || !answers || !contact?.name || !contact?.email) {
-      return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 })
+      return respond({ error: 'Dados incompletos' }, { status: 400 })
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'Configuração interna inválida' }, { status: 500 })
+      return respond({ error: 'Configuração interna inválida' }, { status: 500 })
     }
 
     const serviceLabel = SERVICE_LABELS[service] || service
@@ -108,7 +122,7 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
     if (!response.ok) {
       const err = await response.text()
       console.error('Anthropic error:', err)
-      return NextResponse.json({ error: 'Erro ao processar briefing' }, { status: 500 })
+      return respond({ error: 'Erro ao processar briefing' }, { status: 500 })
     }
 
     const aiData = await response.json()
@@ -146,7 +160,7 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
 
     if (saveError) {
       console.error('Supabase error:', saveError)
-      return NextResponse.json({ error: 'Erro ao salvar proposta' }, { status: 500 })
+      return respond({ error: 'Erro ao salvar proposta' }, { status: 500 })
     }
 
     // Cria também um LEAD no CRM (best-effort: não bloqueia o fluxo da proposta).
@@ -260,9 +274,9 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
       }),
     })
 
-    return NextResponse.json({ success: true, protocol, proposalId: savedProposal.id })
+    return respond({ success: true, protocol, proposalId: savedProposal.id })
   } catch (err) {
     console.error(err)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+    return respond({ error: 'Erro interno' }, { status: 500 })
   }
 }
