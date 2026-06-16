@@ -165,10 +165,11 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
       return respond({ error: 'Erro ao salvar proposta' }, { status: 500 })
     }
 
-    // Cria também um LEAD no CRM (best-effort: não bloqueia o fluxo da proposta).
-    // O CRM tem um endpoint público próprio que insere na tabela leads.
+    // Espelha no CRM (best-effort, não bloqueia o fluxo da proposta):
+    //  1) cria o LEAD a partir do briefing
+    //  2) espelha a PROPOSTA, que se vincula ao lead pelo e-mail
     try {
-      await fetch('https://crm.jottahub.com.br/api/briefing', {
+      await fetch('https://crm.jottahub.com.br/api/sync/briefing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -184,6 +185,16 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
       })
     } catch (e) {
       console.error('[process-briefing] falha ao criar lead no CRM:', e)
+    }
+
+    try {
+      await fetch('https://crm.jottahub.com.br/api/sync/proposta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'INSERT', record: savedProposal }),
+      })
+    } catch (e) {
+      console.error('[process-briefing] falha ao espelhar proposta no CRM:', e)
     }
 
     // Notifica Rennan por e-mail
