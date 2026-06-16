@@ -149,6 +149,27 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
       return NextResponse.json({ error: 'Erro ao salvar proposta' }, { status: 500 })
     }
 
+    // Cria também um LEAD no CRM (best-effort: não bloqueia o fluxo da proposta).
+    // O CRM tem um endpoint público próprio que insere na tabela leads.
+    try {
+      await fetch('https://crm.jottahub.com.br/api/briefing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: contact.name,
+          company: contact.company || '',
+          phone: contact.phone || '',
+          email: contact.email,
+          service: serviceLabel,
+          briefing: `${briefingText}\n\n[Origem: briefing das Propostas · protocolo ${protocol}]`,
+          budget: answers?.investimento || answers?.orcamento || '',
+          deadline: answers?.prazo || '',
+        }),
+      })
+    } catch (e) {
+      console.error('[process-briefing] falha ao criar lead no CRM:', e)
+    }
+
     // Notifica Rennan por e-mail
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
