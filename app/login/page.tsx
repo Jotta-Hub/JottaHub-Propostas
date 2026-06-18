@@ -50,7 +50,7 @@ export default function LoginPage() {
       }} />
       <div style={{
         position: 'fixed', inset: 0,
-        background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(232,50,26,0.06) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 60% 60% at 50% 50%, rgba(134,54,242,0.06) 0%, transparent 70%)',
         pointerEvents: 'none',
       }} />
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
 
               {error && (
                 <div style={{
-                  background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)',
+                  background: 'rgba(134,54,242,0.1)', border: '1px solid rgba(134,54,242,0.3)',
                   borderRadius: 2, padding: '10px 14px', fontSize: '0.82rem', color: '#ff6b6b',
                   display: 'flex', alignItems: 'center', gap: 8,
                 }}>

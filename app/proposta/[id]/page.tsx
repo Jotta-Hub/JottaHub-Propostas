@@ -248,7 +248,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
             </div>
             <div className="p-sobre-stat">
               <div className="p-sobre-stat-n" style={{ fontSize: '1rem', fontWeight: 400, fontFamily: 'var(--fb)', lineHeight: 1.6 }}>
-                <em style={{ color: 'rgba(245,243,239,0.55)' }}>"Não é sobre entregar peças soltas. É sobre criar um sistema que faz o negócio crescer."</em>
+                <em style={{ color: 'rgba(244,244,246,0.55)' }}>"Não é sobre entregar peças soltas. É sobre criar um sistema que faz o negócio crescer."</em>
               </div>
             </div>
           </div>

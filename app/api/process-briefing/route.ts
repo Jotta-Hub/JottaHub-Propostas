@@ -209,30 +209,30 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
         to: 'rennan@jottahub.com.br',
         subject: `🎯 Novo briefing recebido — ${contact.name} (${serviceLabel})`,
         html: `
-          <div style="background:#080808;color:#F5F3EF;font-family:'Helvetica Neue',sans-serif;padding:40px 24px;max-width:520px;margin:0 auto;">
+          <div style="background:#08070B;color:#F4F4F6;font-family:'Helvetica Neue',sans-serif;padding:40px 24px;max-width:520px;margin:0 auto;">
             <div style="font-weight:900;font-size:1.3rem;text-transform:uppercase;margin-bottom:32px;">JOTTA HUB</div>
             <div style="background:#111;border:1px solid #1C1C1C;border-radius:4px;overflow:hidden;">
-              <div style="background:#E8321A;height:3px;"></div>
+              <div style="background:#8636F2;height:3px;"></div>
               <div style="padding:28px;">
                 <div style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:#888;margin-bottom:8px;">Novo Briefing</div>
                 <h2 style="font-size:1.4rem;font-weight:900;text-transform:uppercase;margin-bottom:4px;">${contact.name}</h2>
                 <div style="font-size:0.82rem;color:#888;margin-bottom:24px;">${serviceLabel}</div>
-                <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:16px;margin-bottom:20px;">
+                <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:16px;margin-bottom:20px;">
                   <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:10px;">Dados do Cliente</div>
                   <div style="font-size:0.82rem;margin-bottom:6px;"><strong>Nome:</strong> ${contact.name}</div>
                   <div style="font-size:0.82rem;margin-bottom:6px;"><strong>E-mail:</strong> ${contact.email}</div>
                   ${contact.phone ? `<div style="font-size:0.82rem;"><strong>WhatsApp:</strong> ${contact.phone}</div>` : ''}
                 </div>
-                <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:16px;margin-bottom:20px;">
+                <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:16px;margin-bottom:20px;">
                   <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:10px;">Briefing</div>
                   <pre style="font-size:0.78rem;color:#aaa;white-space:pre-wrap;font-family:inherit;line-height:1.6;">${briefingText}</pre>
                 </div>
-                <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:16px;margin-bottom:24px;">
+                <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:16px;margin-bottom:24px;">
                   <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:6px;">Proposta Gerada</div>
                   <div style="font-size:0.82rem;color:#22c55e;">✅ Proposta rascunho criada automaticamente</div>
                   <div style="font-size:0.72rem;color:#666;margin-top:4px;">Protocolo: ${protocol}</div>
                 </div>
-                <a href="https://propostas.jottahub.com.br/admin" style="display:block;background:#E8321A;color:#F5F3EF;text-align:center;padding:13px;border-radius:2px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;">
+                <a href="https://propostas.jottahub.com.br/admin" style="display:block;background:#8636F2;color:#F4F4F6;text-align:center;padding:13px;border-radius:2px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;">
                   Ver no Admin →
                 </a>
               </div>
@@ -254,7 +254,7 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
         to: contact.email,
         subject: `Briefing recebido — ${serviceLabel}`,
         html: `
-          <div style="background:#080808;color:#F5F3EF;font-family:'Helvetica Neue',sans-serif;padding:40px 24px;max-width:480px;margin:0 auto;">
+          <div style="background:#08070B;color:#F4F4F6;font-family:'Helvetica Neue',sans-serif;padding:40px 24px;max-width:480px;margin:0 auto;">
             <div style="font-weight:900;font-size:1.3rem;text-transform:uppercase;margin-bottom:32px;">JOTTA HUB</div>
             <div style="background:#111;border:1px solid #1C1C1C;border-radius:4px;overflow:hidden;">
               <div style="background:#22c55e;height:3px;"></div>
@@ -262,22 +262,22 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
                 <div style="font-size:2rem;margin-bottom:16px;">✅</div>
                 <h2 style="font-size:1.3rem;font-weight:900;text-transform:uppercase;margin-bottom:8px;">Briefing Recebido!</h2>
                 <p style="font-size:0.88rem;color:#888;line-height:1.7;margin-bottom:24px;">
-                  Olá, ${contact.name}! Recebemos seu briefing sobre <strong style="color:#F5F3EF;">${serviceLabel}</strong>. 
+                  Olá, ${contact.name}! Recebemos seu briefing sobre <strong style="color:#F4F4F6;">${serviceLabel}</strong>. 
                   Nossa equipe está analisando suas informações e em breve entraremos em contato com uma proposta personalizada.
                 </p>
-                <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:14px;margin-bottom:20px;display:inline-block;">
+                <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:14px;margin-bottom:20px;display:inline-block;">
                   <div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:#888;margin-bottom:4px;">Seu Protocolo</div>
                   <div style="font-weight:700;font-family:monospace;font-size:1.1rem;letter-spacing:0.15em;">${protocol}</div>
                 </div>
                 <p style="font-size:0.82rem;color:#aaa;line-height:1.7;margin-bottom:20px;">
                   Use seu protocolo para acompanhar o status da proposta em tempo real.
                 </p>
-                <a href="https://propostas.jottahub.com.br/status" style="display:block;background:#E8321A;color:#F5F3EF;text-align:center;padding:13px 20px;border-radius:2px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;margin-bottom:20px;">
+                <a href="https://propostas.jottahub.com.br/status" style="display:block;background:#8636F2;color:#F4F4F6;text-align:center;padding:13px 20px;border-radius:2px;font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;text-decoration:none;margin-bottom:20px;">
                   Acompanhar minha proposta →
                 </a>
                 <p style="font-size:0.75rem;color:#444;line-height:1.6;">
-                  Ou acesse: <a href="https://propostas.jottahub.com.br/status" style="color:#E8321A;">propostas.jottahub.com.br/status</a><br/>
-                  Dúvidas? WhatsApp: <a href="https://wa.me/5551993009391" style="color:#E8321A;">51 99300-9391</a>
+                  Ou acesse: <a href="https://propostas.jottahub.com.br/status" style="color:#8636F2;">propostas.jottahub.com.br/status</a><br/>
+                  Dúvidas? WhatsApp: <a href="https://wa.me/5551993009391" style="color:#8636F2;">51 99300-9391</a>
                 </p>
               </div>
             </div>

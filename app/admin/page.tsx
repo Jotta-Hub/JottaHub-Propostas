@@ -42,7 +42,7 @@ function fmt(d?: string) {
 const PAYMENT_METHODS = ['PIX', 'Transferência', 'Cartão de crédito', 'Cartão de débito', 'Boleto', 'Outro']
 
 const statusColor: Record<string, string> = {
-  pending: '#f59e0b', paid: '#22c55e', overdue: '#E8321A',
+  pending: '#f59e0b', paid: '#22c55e', overdue: '#ef4444',
 }
 const statusLabel2: Record<string, string> = {
   pending: 'A receber', paid: 'Pago', overdue: 'Vencido',
@@ -500,7 +500,7 @@ export default function AdminPage() {
                 {alertProposals.map(p => {
                   const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
                   return (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(232,50,26,0.08)', border: '1px solid rgba(232,50,26,0.25)', borderRadius: 3, padding: '12px 18px', marginBottom: 8 }}>
+                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(134,54,242,0.08)', border: '1px solid rgba(134,54,242,0.25)', borderRadius: 3, padding: '12px 18px', marginBottom: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <span>⚠️</span>
                         <div>
@@ -516,7 +516,7 @@ export default function AdminPage() {
                   )
                 })}
                 {overduePayments.slice(0, 3).map(p => (
-                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(232,50,26,0.08)', border: '1px solid rgba(232,50,26,0.25)', borderRadius: 3, padding: '12px 18px', marginBottom: 8 }}>
+                  <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(134,54,242,0.08)', border: '1px solid rgba(134,54,242,0.25)', borderRadius: 3, padding: '12px 18px', marginBottom: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <span>🔴</span>
                       <div>
@@ -817,7 +817,7 @@ export default function AdminPage() {
                   <select value={pay.payment_method || 'PIX'} onChange={e => updatePaymentField(pay.id!, 'payment_method', e.target.value)} disabled={pay.status === 'paid'} style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: 'var(--mid)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }}>
                     {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
-                  <input type="date" value={pay.due_date || ''} onChange={e => updatePaymentField(pay.id!, 'due_date', e.target.value)} disabled={pay.status === 'paid'} style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: pay.status === 'overdue' ? '#E8321A' : 'var(--white)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }} />
+                  <input type="date" value={pay.due_date || ''} onChange={e => updatePaymentField(pay.id!, 'due_date', e.target.value)} disabled={pay.status === 'paid'} style={{ background: 'var(--black)', border: '1px solid var(--gray3)', color: pay.status === 'overdue' ? 'var(--alert)' : 'var(--white)', borderRadius: 2, padding: '4px 6px', fontSize: '0.72rem', width: '100%' }} />
                   <span style={{ fontSize: '0.75rem', color: 'var(--mid)', fontFamily: 'var(--fd)', fontWeight: 700 }}>{pay.installment}</span>
                   <div>
                     <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '0.9rem', color: statusColor[pay.status] }}>{fmtBRL(pay.amount)}</div>

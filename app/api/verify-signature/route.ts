@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         html: `
           <!DOCTYPE html>
           <html>
-          <body style="background:#080808;color:#F5F3EF;font-family:'Helvetica Neue',sans-serif;margin:0;padding:0;">
+          <body style="background:#08070B;color:#F4F4F6;font-family:'Helvetica Neue',sans-serif;margin:0;padding:0;">
             <div style="max-width:480px;margin:40px auto;padding:0 20px;">
               <div style="margin-bottom:32px;">
                 <span style="font-weight:900;font-size:1.3rem;letter-spacing:-0.01em;text-transform:uppercase;">JOTTA HUB</span>
@@ -127,12 +127,12 @@ export async function POST(req: NextRequest) {
                 <div style="padding:32px;">
                   <p style="font-size:2rem;text-align:center;margin-bottom:16px;">✅</p>
                   <h1 style="font-size:1.4rem;font-weight:900;text-transform:uppercase;text-align:center;margin-bottom:16px;">Proposta Assinada!</h1>
-                  <p style="font-size:0.95rem;color:rgba(245,243,239,0.7);line-height:1.7;text-align:center;margin-bottom:32px;">
+                  <p style="font-size:0.95rem;color:rgba(244,244,246,0.7);line-height:1.7;text-align:center;margin-bottom:32px;">
                     Ambas as partes assinaram o documento. Validade jurídica garantida pela Lei 14.063/2020.
                   </p>
 
                   <p style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;">Assinatura do Contratante</p>
-                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:20px;margin-bottom:16px;">
+                  <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:20px;margin-bottom:16px;">
                     <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1C1C1C;font-size:0.78rem;">
                       <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Signatário</span>
                       <span>${signer_name}</span>
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
                   </div>
 
                   <p style="font-size:0.72rem;color:#888;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;">Assinatura da Contratada</p>
-                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:20px;margin-bottom:16px;">
+                  <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:20px;margin-bottom:16px;">
                     <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1C1C1C;font-size:0.78rem;">
                       <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Signatário</span>
                       <span>${ADMIN_NAME}</span>
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
                     </div>
                   </div>
 
-                  <div style="background:#080808;border:1px solid #2E2E2E;border-radius:3px;padding:16px;">
+                  <div style="background:#08070B;border:1px solid #2E2E2E;border-radius:3px;padding:16px;">
                     <div style="display:flex;justify-content:space-between;font-size:0.72rem;">
                       <span style="color:#888;text-transform:uppercase;letter-spacing:0.1em;">Hash do Documento</span>
                       <span style="font-size:0.65rem;color:#555;">${proposalHash.slice(0, 16)}...</span>

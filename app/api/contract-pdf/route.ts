@@ -28,7 +28,7 @@ function gerarObjetoContrato(proposal: {
     .filter(s => s.name?.trim())
     .map(s => s.name.trim())
 
-  let texto = `O presente contrato tem por objeto a prestação de serviços denominados <strong style="color:#F5F3EF;">${titulo}</strong>`
+  let texto = `O presente contrato tem por objeto a prestação de serviços denominados <strong style="color:#F4F4F6;">${titulo}</strong>`
 
   if (servicosNomes.length > 0) {
     const lista = servicosNomes.length === 1
@@ -88,8 +88,8 @@ export async function GET(req: NextRequest) {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background: #080808;
-    color: #F5F3EF;
+    background: #08070B;
+    color: #F4F4F6;
     padding: 48px 40px;
     max-width: 760px;
     margin: 0 auto;
@@ -98,12 +98,12 @@ export async function GET(req: NextRequest) {
   }
   .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid #1C1C1C; }
   .logo { font-weight: 900; font-size: 1.4rem; letter-spacing: -0.02em; text-transform: uppercase; }
-  .logo span { color: #E8321A; }
-  .doc-badge { background: rgba(232,50,26,0.1); border: 1px solid rgba(232,50,26,0.3); color: #E8321A; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 6px 12px; border-radius: 2px; }
+  .logo span { color: #8636F2; }
+  .doc-badge { background: rgba(217,164,65,0.1); border: 1px solid rgba(217,164,65,0.35); color: #D9A441; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 6px 12px; border-radius: 2px; }
   .title-block { margin-bottom: 36px; }
   .doc-type { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 8px; }
   h1 { font-size: 1.8rem; font-weight: 900; text-transform: uppercase; line-height: 1.1; margin-bottom: 8px; }
-  h1 span { color: #E8321A; }
+  h1 span { color: #8636F2; }
   .subtitle { color: #888; font-size: 0.82rem; }
   .section { margin-bottom: 24px; padding: 20px; background: #111; border: 1px solid #1C1C1C; border-radius: 3px; }
   .section-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #1C1C1C; }
@@ -119,16 +119,16 @@ export async function GET(req: NextRequest) {
   .services-table tr:last-child td { border-bottom: none; }
   .total-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2E2E2E; display: flex; justify-content: space-between; }
   .total-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #888; }
-  .total-value { font-size: 1.1rem; font-weight: 900; color: #E8321A; }
+  .total-value { font-size: 1.1rem; font-weight: 900; color: #8636F2; }
   .clausulas-title { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #1C1C1C; }
   .clausula { margin-bottom: 18px; }
-  .clausula-num { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #E8321A; margin-bottom: 4px; }
+  .clausula-num { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #D9A441; margin-bottom: 4px; }
   .clausula-titulo { font-weight: 700; font-size: 0.82rem; margin-bottom: 6px; }
-  .clausula-texto { font-size: 0.78rem; color: rgba(245,243,239,0.75); line-height: 1.7; }
+  .clausula-texto { font-size: 0.78rem; color: rgba(244,244,246,0.75); line-height: 1.7; }
   .clausula-texto p { margin-bottom: 4px; }
   .sigs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
   .sig-box { background: #111; border: 1px solid #1C1C1C; border-radius: 3px; padding: 18px; }
-  .sig-role { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #E8321A; margin-bottom: 12px; }
+  .sig-role { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #D9A441; margin-bottom: 12px; }
   .sig-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 6px; }
   .sig-detail { font-size: 0.72rem; color: #888; margin-bottom: 3px; }
   .valid-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; margin-top: 10px; }
@@ -171,7 +171,7 @@ export async function GET(req: NextRequest) {
     <span class="row-key">Data de Emissão</span>
     <span class="row-val">${fmtDate(proposal.created_at)}</span>
   </div>
-  ${total > 0 ? `<div class="row"><span class="row-key">Valor Total</span><span class="row-val" style="color:#E8321A;font-weight:700;">${fmtBRL(total)}</span></div>` : ''}
+  ${total > 0 ? `<div class="row"><span class="row-key">Valor Total</span><span class="row-val" style="color:#8636F2;font-weight:700;">${fmtBRL(total)}</span></div>` : ''}
 </div>
 
 ${services.length > 0 ? `
@@ -252,8 +252,8 @@ ${services.length > 0 ? `
     <div class="clausula-num">Cláusula 7</div>
     <div class="clausula-titulo">Das Obrigações das Partes</div>
     <div class="clausula-texto">
-      <p><strong style="color:#F5F3EF;">Contratada:</strong> executar os serviços com qualidade e dentro do prazo acordado; manter sigilo sobre informações confidenciais da Contratante; comunicar eventuais impedimentos com antecedência.</p>
-      <p style="margin-top:6px;"><strong style="color:#F5F3EF;">Contratante:</strong> fornecer materiais, informações e aprovações necessárias nos prazos solicitados; efetuar os pagamentos nas datas acordadas; designar um responsável para aprovações e feedback.</p>
+      <p><strong style="color:#F4F4F6;">Contratada:</strong> executar os serviços com qualidade e dentro do prazo acordado; manter sigilo sobre informações confidenciais da Contratante; comunicar eventuais impedimentos com antecedência.</p>
+      <p style="margin-top:6px;"><strong style="color:#F4F4F6;">Contratante:</strong> fornecer materiais, informações e aprovações necessárias nos prazos solicitados; efetuar os pagamentos nas datas acordadas; designar um responsável para aprovações e feedback.</p>
     </div>
   </div>
 

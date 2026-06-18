@@ -135,7 +135,7 @@ export default function BriefingPage() {
     <>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #080808; color: #F5F3EF; font-family: 'Helvetica Neue', sans-serif; }
+        body { background: #08070B; color: #F4F4F6; font-family: 'Helvetica Neue', sans-serif; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
@@ -146,17 +146,17 @@ export default function BriefingPage() {
         <div style={{ padding: '32px 24px 0', maxWidth: 640, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 40 }}>
             <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Jott</span>
-            <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #F5F3EF', margin: '0 2px', position: 'relative', top: '-2px' }} />
+            <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #F4F4F6', margin: '0 2px', position: 'relative', top: '-2px' }} />
             <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Hub</span>
-            <span style={{ width: 5, height: 5, background: '#E8321A', borderRadius: '50%', display: 'inline-block', marginLeft: 3, position: 'relative', top: '-1px' }} />
+            <span style={{ width: 5, height: 5, background: '#8636F2', borderRadius: '50%', display: 'inline-block', marginLeft: 3, position: 'relative', top: '-1px' }} />
           </div>
 
           {/* STEP: SERVIÇO */}
           {step === 'service' && (
             <div style={{ animation: 'fadeUp 0.5s ease' }}>
-              <div style={{ fontSize: '0.62rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#E8321A', marginBottom: 12 }}>Novo Projeto</div>
+              <div style={{ fontSize: '0.62rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8636F2', marginBottom: 12 }}>Novo Projeto</div>
               <h1 style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: 'clamp(2rem, 6vw, 3rem)', lineHeight: 1.05, marginBottom: 12 }}>
-                O que você<br /><span style={{ color: '#E8321A' }}>precisa?</span>
+                O que você<br /><span style={{ color: '#8636F2' }}>precisa?</span>
               </h1>
               <p style={{ fontSize: '0.9rem', color: '#888', lineHeight: 1.7, marginBottom: 36 }}>
                 Selecione o tipo de projeto e vamos montar um briefing personalizado juntos.
@@ -171,12 +171,12 @@ export default function BriefingPage() {
                       padding: '16px 20px', cursor: 'pointer', textAlign: 'left',
                       transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 14,
                     }}
-                    onMouseOver={e => { e.currentTarget.style.borderColor = '#E8321A'; e.currentTarget.style.background = 'rgba(232,50,26,0.04)' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = '#8636F2'; e.currentTarget.style.background = 'rgba(134,54,242,0.04)' }}
                     onMouseOut={e => { e.currentTarget.style.borderColor = '#2E2E2E'; e.currentTarget.style.background = '#111' }}
                   >
                     <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>{s.label.split(' ')[0]}</span>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#F5F3EF', marginBottom: 2 }}>{s.label.split(' ').slice(1).join(' ')}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#F4F4F6', marginBottom: 2 }}>{s.label.split(' ').slice(1).join(' ')}</div>
                       <div style={{ fontSize: '0.76rem', color: '#666' }}>{s.desc}</div>
                     </div>
                     <span style={{ marginLeft: 'auto', color: '#444', fontSize: '1rem' }}>→</span>
@@ -192,9 +192,9 @@ export default function BriefingPage() {
               <button onClick={() => setStep('service')} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '0.78rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6 }}>
                 ← Voltar
               </button>
-              <div style={{ fontSize: '0.62rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#E8321A', marginBottom: 12 }}>{serviceLabel}</div>
+              <div style={{ fontSize: '0.62rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8636F2', marginBottom: 12 }}>{serviceLabel}</div>
               <h1 style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', lineHeight: 1.1, marginBottom: 8 }}>
-                Conta pra<br /><span style={{ color: '#E8321A' }}>a gente</span>
+                Conta pra<br /><span style={{ color: '#8636F2' }}>a gente</span>
               </h1>
               <p style={{ fontSize: '0.85rem', color: '#888', lineHeight: 1.7, marginBottom: 36 }}>
                 Responda com o máximo de detalhes. Quanto mais você contar, melhor será a proposta.
@@ -203,8 +203,8 @@ export default function BriefingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {questions.map((q, i) => (
                   <div key={q.id} style={{ animation: `fadeUp 0.4s ease ${i * 0.05}s both` }}>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.05em', color: '#F5F3EF', marginBottom: 8 }}>
-                      <span style={{ color: '#E8321A', marginRight: 6 }}>{String(i + 1).padStart(2, '0')}.</span>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.05em', color: '#F4F4F6', marginBottom: 8 }}>
+                      <span style={{ color: '#8636F2', marginRight: 6 }}>{String(i + 1).padStart(2, '0')}.</span>
                       {q.label}
                     </label>
                     <textarea
@@ -214,11 +214,11 @@ export default function BriefingPage() {
                       rows={3}
                       style={{
                         width: '100%', background: '#111', border: '1px solid #2E2E2E',
-                        color: '#F5F3EF', fontSize: '0.87rem', padding: '12px 14px',
+                        color: '#F4F4F6', fontSize: '0.87rem', padding: '12px 14px',
                         borderRadius: 2, outline: 'none', resize: 'vertical', lineHeight: 1.6,
                         fontFamily: 'inherit', transition: 'border-color 0.2s',
                       }}
-                      onFocus={e => e.target.style.borderColor = '#E8321A'}
+                      onFocus={e => e.target.style.borderColor = '#8636F2'}
                       onBlur={e => e.target.style.borderColor = '#2E2E2E'}
                     />
                   </div>
@@ -242,10 +242,10 @@ export default function BriefingPage() {
                           placeholder={f.placeholder}
                           style={{
                             width: '100%', background: '#111', border: '1px solid #2E2E2E',
-                            color: '#F5F3EF', fontSize: '0.87rem', padding: '11px 14px',
+                            color: '#F4F4F6', fontSize: '0.87rem', padding: '11px 14px',
                             borderRadius: 2, outline: 'none', fontFamily: 'inherit', transition: 'border-color 0.2s',
                           }}
-                          onFocus={e => e.target.style.borderColor = '#E8321A'}
+                          onFocus={e => e.target.style.borderColor = '#8636F2'}
                           onBlur={e => e.target.style.borderColor = '#2E2E2E'}
                         />
                       </div>
@@ -254,7 +254,7 @@ export default function BriefingPage() {
                 </div>
 
                 {error && (
-                  <div style={{ background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b' }}>
+                  <div style={{ background: 'rgba(134,54,242,0.1)', border: '1px solid rgba(134,54,242,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b' }}>
                     ⚠ {error}
                   </div>
                 )}
@@ -263,7 +263,7 @@ export default function BriefingPage() {
                   onClick={submitBriefing}
                   disabled={loading}
                   style={{
-                    background: '#E8321A', color: '#F5F3EF', border: 'none', borderRadius: 2,
+                    background: '#8636F2', color: '#F4F4F6', border: 'none', borderRadius: 2,
                     padding: '15px', fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em',
                     textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer',
                     opacity: loading ? 0.7 : 1, fontFamily: 'inherit',
@@ -278,7 +278,7 @@ export default function BriefingPage() {
           {/* STEP: ENVIANDO */}
           {step === 'sending' && (
             <div style={{ animation: 'fadeUp 0.5s ease', textAlign: 'center', paddingTop: 80 }}>
-              <div style={{ width: 48, height: 48, border: '3px solid #2E2E2E', borderTop: '3px solid #E8321A', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 24px' }} />
+              <div style={{ width: 48, height: 48, border: '3px solid #2E2E2E', borderTop: '3px solid #8636F2', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 24px' }} />
               <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 8 }}>Processando seu briefing...</div>
               <div style={{ fontSize: '0.82rem', color: '#888' }}>A IA está analisando suas respostas e montando a proposta.</div>
             </div>
@@ -299,7 +299,7 @@ export default function BriefingPage() {
               {protocol && (
                 <div style={{ background: '#111', border: '1px solid #2E2E2E', borderRadius: 3, padding: '20px 24px', marginBottom: 24 }}>
                   <div style={{ fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#888', marginBottom: 8 }}>Seu Protocolo</div>
-                  <div style={{ fontWeight: 700, fontSize: '1.4rem', color: '#F5F3EF', fontFamily: 'monospace', letterSpacing: '0.15em', marginBottom: 4 }}>{protocol}</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.4rem', color: '#F4F4F6', fontFamily: 'monospace', letterSpacing: '0.15em', marginBottom: 4 }}>{protocol}</div>
                   <div style={{ fontSize: '0.72rem', color: '#555' }}>Guarde este código — você vai precisar dele para acompanhar a proposta</div>
                 </div>
               )}
@@ -307,7 +307,7 @@ export default function BriefingPage() {
               <a
                 href="/status"
                 style={{
-                  display: 'block', background: '#E8321A', color: '#F5F3EF',
+                  display: 'block', background: '#8636F2', color: '#F4F4F6',
                   padding: '14px', borderRadius: 2, fontWeight: 800, fontSize: '0.85rem',
                   letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
                   marginBottom: 10,

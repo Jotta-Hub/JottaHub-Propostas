@@ -140,11 +140,11 @@ export default function BriefingGenerator({ onGenerated }: Props) {
           fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.75rem',
           letterSpacing: '0.1em', textTransform: 'uppercase',
           padding: '9px 14px', borderRadius: 2,
-          border: '1px dashed rgba(232,50,26,0.4)',
+          border: '1px dashed rgba(134,54,242,0.4)',
           cursor: 'pointer', transition: 'all 0.2s',
         }}
         onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--red)'; e.currentTarget.style.color = 'var(--red)' }}
-        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(232,50,26,0.4)'; e.currentTarget.style.color = 'var(--mid)' }}
+        onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(134,54,242,0.4)'; e.currentTarget.style.color = 'var(--mid)' }}
       >
         ✦ Gerar com IA
       </button>
@@ -172,7 +172,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
               <div>
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 10 }}>
                   Gerar com IA
-                  <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 2, background: 'rgba(232,50,26,0.15)', color: 'var(--red)', border: '1px solid rgba(232,50,26,0.3)' }}>✦ IA</span>
+                  <span style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.58rem', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 2, background: 'rgba(134,54,242,0.15)', color: 'var(--red)', border: '1px solid rgba(134,54,242,0.3)' }}>✦ IA</span>
                 </div>
                 <div style={{ fontSize: '0.74rem', color: 'var(--mid)', marginTop: 3 }}>Cole o briefing — texto, áudio transcrito ou anotações</div>
               </div>
@@ -203,7 +203,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
               {loading && (
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ height: 2, background: 'var(--gray2)', borderRadius: 1, overflow: 'hidden', marginBottom: 10 }}>
-                    <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--red),rgba(232,50,26,0.3),var(--red))', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+                    <div style={{ height: '100%', background: 'linear-gradient(90deg,var(--red),rgba(134,54,242,0.3),var(--red))', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
                   </div>
                   <div style={{ fontSize: '0.76rem', color: 'var(--mid)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ width: 5, height: 5, background: 'var(--red)', borderRadius: '50%', animation: 'blink 1s infinite', display: 'inline-block' }} />
@@ -213,7 +213,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
               )}
 
               {error && (
-                <div style={{ background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 14 }}>
+                <div style={{ background: 'rgba(134,54,242,0.1)', border: '1px solid rgba(134,54,242,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 14 }}>
                   ⚠ {error}
                 </div>
               )}
@@ -222,19 +222,19 @@ export default function BriefingGenerator({ onGenerated }: Props) {
                 <>
                   {/* Preview da proposta */}
                   <div style={{ background: 'var(--black)', border: '1px solid var(--gray2)', borderRadius: 3, overflow: 'hidden', marginBottom: 16 }}>
-                    <div style={{ padding: '12px 18px', background: 'rgba(232,50,26,0.06)', borderBottom: '1px solid var(--gray2)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--red)' }}>
+                    <div style={{ padding: '12px 18px', background: 'rgba(134,54,242,0.06)', borderBottom: '1px solid var(--gray2)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--red)' }}>
                       ✦ Proposta gerada — revise antes de usar
                     </div>
                     <div style={{ padding: '16px 18px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       {[['Cliente', result.client], ['Contato', result.contact]].map(([k, v]) => (
                         <div key={k}>
                           <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>{k}</div>
-                          <div style={{ background: 'rgba(232,50,26,0.05)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{v}</div>
+                          <div style={{ background: 'rgba(134,54,242,0.05)', border: '1px solid rgba(134,54,242,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{v}</div>
                         </div>
                       ))}
                       <div style={{ gridColumn: '1/-1' }}>
                         <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>Título</div>
-                        <div style={{ background: 'rgba(232,50,26,0.05)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{result.title}</div>
+                        <div style={{ background: 'rgba(134,54,242,0.05)', border: '1px solid rgba(134,54,242,0.2)', borderRadius: 2, padding: '8px 10px', fontSize: '0.84rem', fontFamily: 'var(--fd)', fontWeight: 700 }}>{result.title}</div>
                       </div>
                       <div style={{ gridColumn: '1/-1' }}>
                         <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.62rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 4 }}>Entregáveis ({result.deliverables?.length || 0})</div>

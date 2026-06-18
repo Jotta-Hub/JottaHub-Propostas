@@ -88,7 +88,7 @@ export default function StatusPage() {
     <>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #080808; color: #F5F3EF; font-family: 'Helvetica Neue', sans-serif; }
+        body { background: #08070B; color: #F4F4F6; font-family: 'Helvetica Neue', sans-serif; }
         @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity:0.4; transform:scale(1); } 50% { opacity:1; transform:scale(1.05); } }
@@ -99,9 +99,9 @@ export default function StatusPage() {
         {/* LOGO */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 48 }}>
           <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Jott</span>
-          <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #F5F3EF', margin: '0 2px', position: 'relative', top: '-2px' }} />
+          <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #F4F4F6', margin: '0 2px', position: 'relative', top: '-2px' }} />
           <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Hub</span>
-          <span style={{ width: 5, height: 5, background: '#E8321A', borderRadius: '50%', display: 'inline-block', marginLeft: 3, position: 'relative', top: '-1px' }} />
+          <span style={{ width: 5, height: 5, background: '#8636F2', borderRadius: '50%', display: 'inline-block', marginLeft: 3, position: 'relative', top: '-1px' }} />
         </div>
 
         <div style={{ width: '100%', maxWidth: 480, animation: 'fadeUp 0.5s ease' }}>
@@ -109,9 +109,9 @@ export default function StatusPage() {
           {!data ? (
             <>
               <div style={{ textAlign: 'center', marginBottom: 36 }}>
-                <div style={{ fontSize: '0.62rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#E8321A', marginBottom: 12 }}>Acompanhe sua proposta</div>
+                <div style={{ fontSize: '0.62rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8636F2', marginBottom: 12 }}>Acompanhe sua proposta</div>
                 <h1 style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: 'clamp(1.8rem, 5vw, 2.8rem)', lineHeight: 1.1, marginBottom: 12 }}>
-                  Digite seu<br /><span style={{ color: '#E8321A' }}>protocolo</span>
+                  Digite seu<br /><span style={{ color: '#8636F2' }}>protocolo</span>
                 </h1>
                 <p style={{ fontSize: '0.88rem', color: '#888', lineHeight: 1.7 }}>
                   Você recebeu o protocolo por e-mail após enviar o briefing.
@@ -130,18 +130,18 @@ export default function StatusPage() {
                   placeholder="JH-XXXXXX"
                   maxLength={10}
                   style={{
-                    width: '100%', background: '#080808', border: '1px solid #2E2E2E',
-                    color: '#F5F3EF', fontSize: '1.4rem', fontWeight: 700, fontFamily: 'monospace',
+                    width: '100%', background: '#08070B', border: '1px solid #2E2E2E',
+                    color: '#F4F4F6', fontSize: '1.4rem', fontWeight: 700, fontFamily: 'monospace',
                     padding: '14px 16px', borderRadius: 2, outline: 'none',
                     letterSpacing: '0.15em', textAlign: 'center', marginBottom: 16,
                     transition: 'border-color 0.2s',
                   }}
-                  onFocus={e => e.target.style.borderColor = '#E8321A'}
+                  onFocus={e => e.target.style.borderColor = '#8636F2'}
                   onBlur={e => e.target.style.borderColor = '#2E2E2E'}
                 />
 
                 {error && (
-                  <div style={{ background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 14, textAlign: 'center' }}>
+                  <div style={{ background: 'rgba(134,54,242,0.1)', border: '1px solid rgba(134,54,242,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 14, textAlign: 'center' }}>
                     ⚠ {error}
                   </div>
                 )}
@@ -150,7 +150,7 @@ export default function StatusPage() {
                   onClick={search}
                   disabled={loading}
                   style={{
-                    width: '100%', background: '#E8321A', color: '#F5F3EF', border: 'none',
+                    width: '100%', background: '#8636F2', color: '#F4F4F6', border: 'none',
                     borderRadius: 2, padding: '14px', fontWeight: 800, fontSize: '0.85rem',
                     letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer',
                     opacity: loading ? 0.7 : 1, fontFamily: 'inherit', display: 'flex',
@@ -168,7 +168,7 @@ export default function StatusPage() {
 
               <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#444', marginTop: 20 }}>
                 Dúvidas? Fale pelo{' '}
-                <a href="https://wa.me/5551993009391" style={{ color: '#E8321A', textDecoration: 'none' }}>WhatsApp</a>
+                <a href="https://wa.me/5551993009391" style={{ color: '#8636F2', textDecoration: 'none' }}>WhatsApp</a>
               </p>
             </>
           ) : (
@@ -191,7 +191,7 @@ export default function StatusPage() {
                     {statusInfo!.desc}
                   </p>
 
-                  <div style={{ background: '#080808', border: '1px solid #1C1C1C', borderRadius: 2, padding: '14px 16px', marginBottom: 20 }}>
+                  <div style={{ background: '#08070B', border: '1px solid #1C1C1C', borderRadius: 2, padding: '14px 16px', marginBottom: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #1C1C1C', fontSize: '0.78rem' }}>
                       <span style={{ color: '#555', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.65rem' }}>Cliente</span>
                       <span style={{ fontWeight: 600 }}>{data.client}</span>
@@ -211,7 +211,7 @@ export default function StatusPage() {
                       href={`/proposta/${data.proposal_id}`}
                       target="_blank"
                       style={{
-                        display: 'block', background: '#E8321A', color: '#F5F3EF',
+                        display: 'block', background: '#8636F2', color: '#F4F4F6',
                         textAlign: 'center', padding: '14px', borderRadius: 2,
                         fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em',
                         textTransform: 'uppercase', textDecoration: 'none', marginBottom: 10,
@@ -237,7 +237,7 @@ export default function StatusPage() {
 
               <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#444' }}>
                 Dúvidas? Fale pelo{' '}
-                <a href="https://wa.me/5551993009391" style={{ color: '#E8321A', textDecoration: 'none' }}>WhatsApp</a>
+                <a href="https://wa.me/5551993009391" style={{ color: '#8636F2', textDecoration: 'none' }}>WhatsApp</a>
               </p>
             </div>
           )}

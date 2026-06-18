@@ -185,10 +185,10 @@ export default function SignatureModal({ proposalId, proposalClient, totalValue 
                       <input className="form-input" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} />
                     </div>
                   </div>
-                  <div style={{ background: 'rgba(232,50,26,0.06)', border: '1px solid rgba(232,50,26,0.2)', borderRadius: 2, padding: '12px 14px', fontSize: '0.74rem', color: 'rgba(245,243,239,0.6)', lineHeight: 1.6 }}>
+                  <div style={{ background: 'rgba(134,54,242,0.06)', border: '1px solid rgba(134,54,242,0.2)', borderRadius: 2, padding: '12px 14px', fontSize: '0.74rem', color: 'rgba(244,244,246,0.6)', lineHeight: 1.6 }}>
                     🔒 Seus dados serão registrados com data, hora e IP como evidência jurídica pela <strong style={{ color: 'var(--white)' }}>Lei 14.063/2020</strong>.
                   </div>
-                  {error && <div style={{ background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b' }}>⚠ {error}</div>}
+                  {error && <div style={{ background: 'rgba(134,54,242,0.1)', border: '1px solid rgba(134,54,242,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b' }}>⚠ {error}</div>}
                   <button onClick={sendCode} disabled={loading} style={{
                     background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)', fontWeight: 800,
                     fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -233,7 +233,7 @@ export default function SignatureModal({ proposalId, proposalClient, totalValue 
                 <p style={{ fontSize: '0.76rem', color: 'var(--mid)', marginBottom: 4 }}>
                   Não recebeu? <span onClick={sendCode} style={{ color: 'var(--red)', cursor: 'pointer' }}>Reenviar código</span>
                 </p>
-                {error && <div style={{ background: 'rgba(232,50,26,0.1)', border: '1px solid rgba(232,50,26,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 12 }}>⚠ {error}</div>}
+                {error && <div style={{ background: 'rgba(134,54,242,0.1)', border: '1px solid rgba(134,54,242,0.3)', borderRadius: 2, padding: '10px 14px', fontSize: '0.8rem', color: '#ff6b6b', marginBottom: 12 }}>⚠ {error}</div>}
                 <button onClick={verifyCode} disabled={loading} style={{
                   width: '100%', background: 'var(--red)', color: 'var(--white)', fontFamily: 'var(--fd)',
                   fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase',
