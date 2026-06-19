@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import { supabase, type Proposal } from '@/lib/supabase'
 import { fmtBRL, fmtDate, addWorkdays, calcTotal, statusLabel, DEFAULT_STEPS, EMOJIS } from '@/lib/utils'
 import BriefingGenerator from '@/components/BriefingGenerator'
+import UsersPanel from '@/components/UsersPanel'
 
 type Signature = {
   id: string
@@ -32,7 +33,7 @@ type Payment = {
   is_retroactive?: boolean
 }
 
-type View = 'dashboard' | 'briefings' | 'financeiro' | 'proposals'
+type View = 'dashboard' | 'briefings' | 'financeiro' | 'proposals' | 'usuarios'
 
 function fmt(d?: string) {
   if (!d) return '—'
@@ -444,6 +445,7 @@ export default function AdminPage() {
               { key: 'briefings', label: '📥 Briefings', badge: newBriefings },
               { key: 'financeiro', label: '💰 Financeiro' },
               { key: 'proposals', label: '📋 Propostas' },
+              { key: 'usuarios', label: '👤 Usuários' },
             ] as { key: View; label: string; badge?: number }[]).map(v => (
               <button key={v.key} onClick={() => setView(v.key)} style={{
                 fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase',
@@ -895,6 +897,8 @@ export default function AdminPage() {
             )}
           </>
         )}
+
+        {view === 'usuarios' && <UsersPanel />}
       </div>
 
       {/* MODAL PROPOSTA */}
