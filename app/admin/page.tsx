@@ -414,6 +414,7 @@ export default function AdminPage() {
               <select className="action-btn" value={p.status} onChange={e => updateStatus(p.id!, e.target.value as Proposal['status'])} style={{ appearance: 'none', textAlign: 'center' }}>
                 <option value="pending">Rascunho</option>
                 <option value="sent">Enviada</option>
+                <option value="approved">✓ Aprovada</option>
                 <option value="expired">Expirada</option>
               </select>
               <button className="action-btn" style={{ color: '#888', borderColor: '#2E2E2E' }} onClick={() => archiveProposal(p.id!)}>Arq.</button>
@@ -985,7 +986,7 @@ export default function AdminPage() {
               <hr className="form-divider" />
               <div className="form-section-label">Condições</div>
               <div className="form-group"><label className="form-label">Validade (dias úteis)</label><input className="form-input" type="number" min={1} max={60} value={form.validity} onChange={e => setForm(x => ({ ...x, validity: parseInt(e.target.value) || 5 }))} /></div>
-              <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={form.status} onChange={e => setForm(x => ({ ...x, status: e.target.value as Proposal['status'] }))}><option value="pending">Rascunho</option><option value="sent">Enviada</option><option value="expired">Expirada</option></select></div>
+              <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={form.status} onChange={e => setForm(x => ({ ...x, status: e.target.value as Proposal['status'] }))}><option value="pending">Rascunho</option><option value="sent">Enviada</option><option value="approved">Aprovada</option><option value="expired">Expirada</option></select></div>
             </div>
             <div className="form-actions">
               <button className="btn-sm ghost" onClick={() => setModalOpen(false)}>Cancelar</button>
