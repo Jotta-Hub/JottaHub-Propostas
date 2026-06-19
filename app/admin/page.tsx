@@ -74,6 +74,8 @@ export default function AdminPage() {
 
   const [finModalOpen, setFinModalOpen] = useState(false)
   const [finForm, setFinForm] = useState({ project_label: '', payment_method: 'PIX', total: '', installments: 1 })
+  const [parcelModal, setParcelModal] = useState<{ open: boolean; proposal: Proposal | null }>({ open: false, proposal: null })
+  const [parcelForm, setParcelForm] = useState({ count: 2, method: 'PIX', firstDate: new Date().toISOString().slice(0, 10), intervalDays: 30 })
   const [finParcelas, setFinParcelas] = useState<{ description: string; amount: string; due_date: string; paid: boolean }[]>([
     { description: '', amount: '', due_date: '', paid: false },
   ])
@@ -237,20 +239,42 @@ export default function AdminPage() {
     fetchAll()
   }
 
-  async function generatePaymentsForProposal(proposal: Proposal) {
+  function openParcelModal(proposal: Proposal) {
     if (!proposal.id) return
     const existing = payments.filter(p => p.proposal_id === proposal.id)
     if (existing.length > 0) { showToast('Parcelas já geradas para este projeto.'); return }
+    if (calcTotal(proposal.services || []) === 0) { showToast('Proposta sem valor definido.'); return }
+    setParcelForm({ count: 2, method: 'PIX', firstDate: new Date().toISOString().slice(0, 10), intervalDays: 30 })
+    setParcelModal({ open: true, proposal })
+  }
+
+  async function confirmGenerateParcelas() {
+    const proposal = parcelModal.proposal
+    if (!proposal?.id) return
     const total = calcTotal(proposal.services || [])
-    if (total === 0) { showToast('Proposta sem valor definido.'); return }
-    const half = total / 2
-    const today = new Date().toISOString().slice(0, 10)
-    const in30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-    await supabase.from('payments').insert([
-      { proposal_id: proposal.id, project_label: proposal.client, description: `${proposal.client} — 1ª Parcela (Entrada)`, amount: half, due_date: today, status: 'pending', installment: '1/2', payment_method: 'PIX', is_retroactive: false },
-      { proposal_id: proposal.id, project_label: proposal.client, description: `${proposal.client} — 2ª Parcela (Entrega)`, amount: half, due_date: in30, status: 'pending', installment: '2/2', payment_method: 'PIX', is_retroactive: false },
-    ])
-    showToast('Parcelas geradas!')
+    const n = Math.max(1, parseInt(String(parcelForm.count)) || 1)
+    const method = parcelForm.method || 'PIX'
+    const interval = Math.max(0, parseInt(String(parcelForm.intervalDays)) || 0)
+    const base = parcelForm.firstDate ? new Date(parcelForm.firstDate + 'T00:00:00') : new Date()
+    const per = Math.floor((total / n) * 100) / 100
+    const rows = Array.from({ length: n }, (_, i) => {
+      const d = new Date(base); d.setDate(d.getDate() + interval * i)
+      const amount = i === n - 1 ? Math.round((total - per * (n - 1)) * 100) / 100 : per
+      return {
+        proposal_id: proposal.id,
+        project_label: proposal.client,
+        description: `${proposal.client} — Parcela ${i + 1}/${n}`,
+        amount,
+        due_date: d.toISOString().slice(0, 10),
+        status: 'pending' as const,
+        installment: `${i + 1}/${n}`,
+        payment_method: method,
+        is_retroactive: false,
+      }
+    })
+    await supabase.from('payments').insert(rows)
+    setParcelModal({ open: false, proposal: null })
+    showToast(`${n} parcela(s) gerada(s)!`)
     fetchAll()
   }
 
@@ -599,7 +623,7 @@ export default function AdminPage() {
                         </div>
                         <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                           {propPays.length === 0 && (
-                            <button onClick={() => generatePaymentsForProposal(p)} style={{ fontSize: '0.65rem', color: '#f59e0b', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 2, padding: '3px 8px', cursor: 'pointer' }}>
+                            <button onClick={() => openParcelModal(p)} style={{ fontSize: '0.65rem', color: '#f59e0b', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 2, padding: '3px 8px', cursor: 'pointer' }}>
                               + Gerar parcelas
                             </button>
                           )}
@@ -776,7 +800,7 @@ export default function AdminPage() {
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', color: '#f59e0b', marginBottom: 10 }}>⚠ Projetos aprovados sem parcelas geradas:</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {ongoingProjects.filter(p => !payments.some(pay => pay.proposal_id === p.id)).map(p => (
-                    <button key={p.id} onClick={() => generatePaymentsForProposal(p)} style={{ fontSize: '0.72rem', color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 2, padding: '6px 12px', cursor: 'pointer' }}>
+                    <button key={p.id} onClick={() => openParcelModal(p)} style={{ fontSize: '0.72rem', color: '#f59e0b', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 2, padding: '6px 12px', cursor: 'pointer' }}>
                       + Gerar parcelas — {p.client}
                     </button>
                   ))}
@@ -1076,6 +1100,53 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {parcelModal.open && parcelModal.proposal && (() => {
+        const total = calcTotal(parcelModal.proposal.services || [])
+        const n = Math.max(1, parseInt(String(parcelForm.count)) || 1)
+        const per = n > 0 ? total / n : 0
+        const fld = { width: '100%', background: '#080808', border: '1px solid #2E2E2E', color: '#F5F3EF', borderRadius: 2, padding: '8px 10px', fontSize: '0.85rem' } as const
+        const lbl = { display: 'block', fontSize: '0.62rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#888', marginBottom: 5 } as const
+        return (
+          <div onClick={() => setParcelModal({ open: false, proposal: null })} style={{ position: 'fixed', inset: 0, zIndex: 700, background: 'rgba(8,8,8,0.93)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#111', border: '1px solid #1C1C1C', borderRadius: 4, width: '100%', maxWidth: 440, overflow: 'hidden' }}>
+              <div style={{ padding: '22px 28px 18px', borderBottom: '1px solid #1C1C1C' }}>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase' }}>Gerar Parcelas</div>
+                <div style={{ fontSize: '0.78rem', color: '#888', marginTop: 4 }}>{parcelModal.proposal.client} · {fmtBRL(total)}</div>
+              </div>
+              <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={lbl}>Nº de parcelas</label>
+                    <input type="number" min={1} max={36} value={parcelForm.count} onChange={e => setParcelForm(f => ({ ...f, count: parseInt(e.target.value) || 1 }))} style={fld} />
+                  </div>
+                  <div>
+                    <label style={lbl}>Método</label>
+                    <select value={parcelForm.method} onChange={e => setParcelForm(f => ({ ...f, method: e.target.value }))} style={fld}>
+                      {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={lbl}>1ª parcela em</label>
+                    <input type="date" value={parcelForm.firstDate} onChange={e => setParcelForm(f => ({ ...f, firstDate: e.target.value }))} style={fld} />
+                  </div>
+                  <div>
+                    <label style={lbl}>Intervalo (dias)</label>
+                    <input type="number" min={0} value={parcelForm.intervalDays} onChange={e => setParcelForm(f => ({ ...f, intervalDays: parseInt(e.target.value) || 0 }))} style={fld} />
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#888' }}>
+                  {n}x de <strong style={{ color: '#F5F3EF' }}>{fmtBRL(per)}</strong> no {parcelForm.method}
+                </div>
+              </div>
+              <div style={{ padding: '14px 28px 22px', display: 'flex', gap: 10 }}>
+                <button onClick={() => setParcelModal({ open: false, proposal: null })} style={{ flex: 1, background: 'transparent', color: '#888', border: '1px solid #2E2E2E', borderRadius: 2, padding: 13, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Cancelar</button>
+                <button onClick={confirmGenerateParcelas} style={{ flex: 1, background: '#E8321A', color: '#F5F3EF', border: 'none', borderRadius: 2, padding: 13, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 800, fontSize: '0.8rem', letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}>Gerar {n} parcela(s)</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       <div className={`toast${toast.show ? ' show' : ''}`}>
         <div className="toast-dot" />
