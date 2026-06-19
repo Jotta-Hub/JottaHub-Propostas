@@ -97,11 +97,11 @@ export default function StatusPage() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
 
         {/* LOGO */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 48 }}>
-          <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Jott</span>
-          <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #F4F4F6', margin: '0 2px', position: 'relative', top: '-2px' }} />
-          <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Hub</span>
-          <span style={{ width: 5, height: 5, background: '#8636F2', borderRadius: '50%', display: 'inline-block', marginLeft: 3, position: 'relative', top: '-1px' }} />
+        <div className="jlogo" style={{ marginBottom: 48 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="jmark" src="/logo-jh.png" alt="JOTTA HUB" />
+          <b>JOTTA<span>HUB</span></b>
+          <span className="bolt gold sm" style={{ marginLeft: 2 }} />
         </div>
 
         <div style={{ width: '100%', maxWidth: 480, animation: 'fadeUp 0.5s ease' }}>
@@ -150,7 +150,8 @@ export default function StatusPage() {
                   onClick={search}
                   disabled={loading}
                   style={{
-                    width: '100%', background: '#8636F2', color: '#F4F4F6', border: 'none',
+                    width: '100%', background: 'linear-gradient(135deg,#9B4DFF,#6F2DD3)', color: '#F4F4F6', border: 'none',
+                    boxShadow: '0 4px 18px rgba(134,54,242,0.4)',
                     borderRadius: 2, padding: '14px', fontWeight: 800, fontSize: '0.85rem',
                     letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer',
                     opacity: loading ? 0.7 : 1, fontFamily: 'inherit', display: 'flex',
@@ -211,7 +212,8 @@ export default function StatusPage() {
                       href={`/proposta/${data.proposal_id}`}
                       target="_blank"
                       style={{
-                        display: 'block', background: '#8636F2', color: '#F4F4F6',
+                        display: 'block', background: 'linear-gradient(135deg,#9B4DFF,#6F2DD3)', color: '#F4F4F6',
+                        boxShadow: '0 4px 18px rgba(134,54,242,0.4)',
                         textAlign: 'center', padding: '14px', borderRadius: 2,
                         fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em',
                         textTransform: 'uppercase', textDecoration: 'none', marginBottom: 10,

@@ -429,8 +429,11 @@ export default function AdminPage() {
       {/* NAV */}
       <nav className="admin-nav">
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="nav-logo">
-            <span className="nl-t">Jott</span><span className="nl-tri" /><span className="nl-t" style={{ marginLeft: 1 }}>Hub</span><span className="nl-dot" style={{ marginLeft: 4 }} />
+          <div className="nav-logo jlogo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="jmark" src="/logo-jh.png" alt="JOTTA HUB" />
+            <b>JOTTA<span>HUB</span></b>
+            <span className="bolt gold sm" style={{ marginLeft: 2 }} />
           </div>
           <span className="nav-badge">Propostas</span>
         </div>
@@ -679,7 +682,7 @@ export default function AdminPage() {
                     const briefingRaw = (p as any).briefing_raw || ''
                     return (
                       <div key={p.id} style={{ background: 'var(--gray)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 3, overflow: 'hidden' }}>
-                        <div style={{ height: 2, background: 'linear-gradient(90deg, #a78bfa, #60a5fa)' }} />
+                        <div style={{ height: 2, background: 'linear-gradient(90deg, #A45FFF, #D9A441)' }} />
                         <div style={{ padding: '20px 24px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
                             <div style={{ flex: 1, minWidth: 200 }}>

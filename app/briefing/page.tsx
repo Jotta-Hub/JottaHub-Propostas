@@ -144,11 +144,11 @@ export default function BriefingPage() {
 
         {/* HEADER */}
         <div style={{ padding: '32px 24px 0', maxWidth: 640, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 40 }}>
-            <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Jott</span>
-            <span style={{ display: 'inline-block', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #F4F4F6', margin: '0 2px', position: 'relative', top: '-2px' }} />
-            <span style={{ fontFamily: 'Georgia, serif', fontWeight: 900, fontSize: '1.4rem', textTransform: 'uppercase', letterSpacing: '-0.01em' }}>Hub</span>
-            <span style={{ width: 5, height: 5, background: '#8636F2', borderRadius: '50%', display: 'inline-block', marginLeft: 3, position: 'relative', top: '-1px' }} />
+          <div className="jlogo" style={{ marginBottom: 40 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="jmark" src="/logo-jh.png" alt="JOTTA HUB" />
+            <b>JOTTA<span>HUB</span></b>
+            <span className="bolt gold sm" style={{ marginLeft: 2 }} />
           </div>
 
           {/* STEP: SERVIÇO */}
@@ -263,7 +263,8 @@ export default function BriefingPage() {
                   onClick={submitBriefing}
                   disabled={loading}
                   style={{
-                    background: '#8636F2', color: '#F4F4F6', border: 'none', borderRadius: 2,
+                    background: 'linear-gradient(135deg,#9B4DFF,#6F2DD3)', color: '#F4F4F6', border: 'none', borderRadius: 2,
+                    boxShadow: '0 4px 18px rgba(134,54,242,0.4)',
                     padding: '15px', fontWeight: 800, fontSize: '0.85rem', letterSpacing: '0.1em',
                     textTransform: 'uppercase', cursor: loading ? 'wait' : 'pointer',
                     opacity: loading ? 0.7 : 1, fontFamily: 'inherit',
@@ -307,7 +308,8 @@ export default function BriefingPage() {
               <a
                 href="/status"
                 style={{
-                  display: 'block', background: '#8636F2', color: '#F4F4F6',
+                  display: 'block', background: 'linear-gradient(135deg,#9B4DFF,#6F2DD3)', color: '#F4F4F6',
+                  boxShadow: '0 4px 18px rgba(134,54,242,0.4)',
                   padding: '14px', borderRadius: 2, fontWeight: 800, fontSize: '0.85rem',
                   letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
                   marginBottom: 10,

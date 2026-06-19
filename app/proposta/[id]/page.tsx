@@ -38,7 +38,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
           <span className="p-tag-dot" />
           <span>{fmtDate(p.created_at?.slice(0, 10))}</span>
         </div>
-        <div className="p-hero-eyebrow">JOTTA HUB</div>
+        <div className="p-hero-eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}><span className="bolt" />JOTTA HUB</div>
         <h1 className="p-hero-title">
           <span className="ghost">{p.client}</span>
           <span>{p.title || 'Projeto'}</span>
@@ -258,7 +258,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
       {/* CTA */}
       <section className="p-cta">
         <div className="p-cta-wm">JOTTA</div>
-        <div className="p-cta-label">Próximo passo</div>
+        <div className="p-cta-label" style={{ display: 'inline-flex', alignItems: 'center', gap: 9 }}><span className="bolt gold" />Próximo passo</div>
         <h2 className="p-cta-title"><span className="g">Vamos</span>Criar</h2>
         <p className="p-cta-sub">Proposta válida por <strong>{p.validity || 5}</strong> dias úteis a partir da data de envio.</p>
         <div className="p-cta-contacts">
@@ -289,11 +289,11 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
       </section>
 
       <footer className="p-footer">
-        <div className="nav-logo">
-          <span className="nl-t">Jott</span>
-          <span className="nl-tri" />
-          <span className="nl-t" style={{ marginLeft: 1 }}>Hub</span>
-          <span className="nl-dot" style={{ marginLeft: 4 }} />
+        <div className="nav-logo jlogo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="jmark" src="/logo-jh.png" alt="JOTTA HUB" />
+          <b>JOTTA<span>HUB</span></b>
+          <span className="bolt gold sm" style={{ marginLeft: 2 }} />
         </div>
         <div className="p-footer-copy">POA | RS 🇧🇷</div>
         <div className="p-footer-copy">© 2026 JOTTA HUB</div>
