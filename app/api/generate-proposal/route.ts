@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+type ImgAttach = { mime: string; data: string }
+function buildContent(text: string, images: ImgAttach[]) {
+  if (!images || images.length === 0) return text
+  return [
+    { type: 'text', text: text + `\n\nO usuário também anexou ${images.length} print(s)/imagem(ns) — analise cada um e incorpore o que for relevante (conversas, referências, valores, escopo) ao briefing.` },
+    ...images.map(im => ({ type: 'image', source: { type: 'base64', media_type: im.mime, data: im.data } })),
+  ]
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { briefing } = await req.json()
+    const { briefing = '', images = [] }: { briefing?: string; images?: ImgAttach[] } = await req.json()
 
-    if (!briefing) {
+    if (!briefing.trim() && (!images || images.length === 0)) {
       return NextResponse.json({ error: 'Briefing vazio' }, { status: 400 })
     }
 
@@ -53,7 +62,7 @@ REGRAS DE PRECIFICAÇÃO:
 Analise o briefing e responda APENAS com um JSON válido, sem markdown, sem texto extra.`,
         messages: [{
           role: 'user',
-          content: `Analise este briefing e gere os dados completos para uma proposta comercial, incluindo o orçamento estimado:
+          content: buildContent(`Analise este briefing e gere os dados completos para uma proposta comercial, incluindo o orçamento estimado:
 
 "${briefing}"
 
@@ -102,7 +111,7 @@ Regras para o campo budget:
 - Para qty, use o número de dias, sessões ou unidades identificadas no briefing
 - Para os services, preencha o "value" com o mesmo valor do budget.suggested_total dividido entre os itens
 
-Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️📋🎯💡⭐🚀💼📢🎨`,
+Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️📋🎯💡⭐🚀💼📢🎨`, images),
         }],
       }),
     })

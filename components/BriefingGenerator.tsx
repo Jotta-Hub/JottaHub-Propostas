@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import AttachmentBar, { type ImgAttach } from './AttachmentBar'
 
 type BudgetItem = {
   service: string
@@ -83,9 +84,10 @@ export default function BriefingGenerator({ onGenerated }: Props) {
   const [error, setError] = useState('')
   const [result, setResult] = useState<ProposalData | null>(null)
   const [usePrice, setUsePrice] = useState(true)
+  const [images, setImages] = useState<ImgAttach[]>([])
 
   async function generate() {
-    if (!briefing.trim()) { setError('Cole o briefing do cliente primeiro.'); return }
+    if (!briefing.trim() && images.length === 0) { setError('Cole o briefing, grave um áudio ou anexe prints primeiro.'); return }
     setLoading(true); setError(''); setResult(null)
 
     let i = 0
@@ -97,7 +99,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
       const res = await fetch('/api/generate-proposal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ briefing }),
+        body: JSON.stringify({ briefing, images }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Erro ao gerar proposta.'); return }
@@ -126,6 +128,7 @@ export default function BriefingGenerator({ onGenerated }: Props) {
     setOpen(false)
     setResult(null)
     setBriefing('')
+    setImages([])
   }
 
   const budget = result?.budget
@@ -193,6 +196,15 @@ export default function BriefingGenerator({ onGenerated }: Props) {
                   resize: 'vertical', lineHeight: 1.7, opacity: loading ? 0.5 : 1,
                 }}
               />
+
+              <div style={{ marginTop: 10 }}>
+                <AttachmentBar
+                  images={images}
+                  setImages={setImages}
+                  onText={t => setBriefing(b => (b ? b + ' ' : '') + t)}
+                  disabled={loading}
+                />
+              </div>
 
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10, marginBottom: 16 }}>
                 {EXAMPLES.map(ex => (
