@@ -9,6 +9,7 @@ import { fmtBRL, fmtDate, addWorkdays, calcTotal, statusLabel, DEFAULT_STEPS, EM
 import BriefingGenerator from '@/components/BriefingGenerator'
 import UsersPanel from '@/components/UsersPanel'
 import PortfolioPanel from '@/components/PortfolioPanel'
+import NinaAssistant from '@/components/NinaAssistant'
 
 type Signature = {
   id: string
@@ -506,6 +507,9 @@ export default function AdminPage() {
                 <button className="btn-sm red" style={{ fontSize: '.9rem', padding: '13px 26px' }} onClick={() => openModal()}>+ Nova Proposta</button>
               </div>
             </div>
+
+            {/* NINA — assistente */}
+            <NinaAssistant proposals={proposals} />
 
             {/* ALERTAS */}
             {(alertProposals.length > 0 || overduePayments.length > 0 || newBriefings > 0) && (
