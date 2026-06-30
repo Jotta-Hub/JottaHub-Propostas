@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { upload } from '@vercel/blob/client'
 
 type Item = {
   id: string
@@ -53,11 +54,12 @@ export default function PortfolioPanel() {
       let thumb_url: string | null = null
 
       if (source === 'upload' && file) {
-        if (file.size > 50 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 50MB). Pra vídeos pesados, use link.')
-        const path = `${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`
-        const up = await supabase.storage.from('portfolio').upload(path, file, { upsert: false })
-        if (up.error) throw new Error(up.error.message)
-        media_url = supabase.storage.from('portfolio').getPublicUrl(path).data.publicUrl
+        if (file.size > 1024 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 1GB).')
+        const blob = await upload(`portfolio/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, {
+          access: 'public',
+          handleUploadUrl: '/api/portfolio-upload',
+        })
+        media_url = blob.url
       }
       if (kind === 'video' && source === 'link') thumb_url = videoThumb(media_url)
 
@@ -74,10 +76,9 @@ export default function PortfolioPanel() {
 
   async function remove(it: Item) {
     if (!confirm(`Remover "${it.title || 'este item'}" do portfólio?`)) return
-    // remove o arquivo do storage se foi upload
+    // remove o arquivo do Vercel Blob se foi upload (best-effort)
     if (it.source === 'upload') {
-      const path = it.media_url.split('/portfolio/')[1]
-      if (path) await supabase.storage.from('portfolio').remove([path])
+      fetch('/api/portfolio-upload', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: it.media_url }) }).catch(() => {})
     }
     await supabase.from('portfolio').delete().eq('id', it.id)
     load()
@@ -125,7 +126,7 @@ export default function PortfolioPanel() {
               <><label style={label}>Link {kind === 'video' ? '(YouTube, Vimeo ou MP4)' : '(URL da imagem)'}</label>
                 <input style={input} placeholder={kind === 'video' ? 'https://youtube.com/watch?v=...' : 'https://...'} value={link} onChange={e => setLink(e.target.value)} /></>
             ) : (
-              <><label style={label}>Arquivo ({kind === 'video' ? 'vídeo até 50MB' : 'imagem'})</label>
+              <><label style={label}>Arquivo ({kind === 'video' ? 'vídeo até 1GB' : 'imagem'})</label>
                 <input style={{ ...input, padding: '8px' }} type="file" accept={kind === 'video' ? 'video/*' : 'image/*'} onChange={e => setFile(e.target.files?.[0] || null)} /></>
             )}
           </div>
