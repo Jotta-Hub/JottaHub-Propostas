@@ -440,10 +440,29 @@ body::after { content:''; position: fixed; inset:0; background-image: url("data:
 /* Financeiro mobile — cards em vez de tabela */
 @media (max-width: 768px) {
   .fin-table-header { display: none !important; }
-  .fin-table-row { 
+  .fin-table-row {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
     padding: 16px !important;
   }
+}
+
+/* ═══════════════════════════════════════
+   PRINT / SALVAR PDF (proposta pública)
+═══════════════════════════════════════ */
+@media print {
+  @page { margin: 10mm; }
+  html, body { background: var(--ink) !important; }
+  body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body::after { display: none !important; }
+  /* esconde a UI que não vai pro PDF */
+  .pdf-btn, .back-btn, .admin-nav, .modal-overlay, .p-cta-btns, .p-ticker { display: none !important; }
+  /* força aparecer tudo que entra com animação/scroll */
+  .reveal, .p-hero-tag, .p-hero-eyebrow, .p-hero-title, .p-hero-meta, .p-hero-client-logo,
+  [class*="reveal"] { opacity: 1 !important; transform: none !important; animation: none !important; }
+  /* evita cortes feios entre páginas */
+  section, .p-pillar, .p-deliv, .p-pay-card, .p-svc-row, .p-step, .p-sobre-stat, .p-tl-row { page-break-inside: avoid; }
+  .p-hero { min-height: auto !important; padding: 28px 40px 24px !important; }
+  .p-sec, .p-sobre, .p-cta { padding: 32px 40px !important; }
 }

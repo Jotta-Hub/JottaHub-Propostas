@@ -138,12 +138,16 @@ export async function GET(req: NextRequest) {
   .law-note { text-align: center; font-size: 0.7rem; color: #555; margin-bottom: 24px; padding: 12px; border: 1px solid #1A1A1A; border-radius: 2px; }
   .law-note strong { color: #888; }
   .footer { padding-top: 20px; border-top: 1px solid #1C1C1C; display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: #444; }
+  .print-btn { position: fixed; top: 16px; right: 16px; z-index: 999; background: linear-gradient(135deg,#9B4DFF,#6F2DD3); color: #fff; border: none; font-weight: 800; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 16px; border-radius: 4px; cursor: pointer; box-shadow: 0 4px 16px rgba(134,54,242,.4); font-family: 'Helvetica Neue', sans-serif; }
+  @media print { .print-btn { display: none !important; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0 !important; } }
 </style>
 </head>
 <body>
 
+<button class="print-btn" onclick="window.print()">↓ Salvar PDF</button>
+
 <div class="header">
-  <div class="logo">Jotta<span>▶</span>Hub</div>
+  <div class="logo">JOTTA<span>HUB</span></div>
   <div class="doc-badge">✅ Contrato Assinado</div>
 </div>
 

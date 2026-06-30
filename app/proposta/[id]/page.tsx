@@ -2,6 +2,7 @@ import { supabase, type Proposal } from '@/lib/supabase'
 import { fmtBRL, fmtDate, addWorkdays, calcTotal, DEFAULT_STEPS } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import SignatureModal from '@/components/SignatureModal'
+import PrintButton from '@/components/PrintButton'
 
 export const revalidate = 60
 
@@ -23,6 +24,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
+      <PrintButton />
 
       {/* HERO */}
       <section className="p-hero">
