@@ -3,6 +3,7 @@ import { fmtBRL, fmtDate, addWorkdays, calcTotal, DEFAULT_STEPS } from '@/lib/ut
 import { notFound } from 'next/navigation'
 import SignatureModal from '@/components/SignatureModal'
 import PrintButton from '@/components/PrintButton'
+import PortfolioSection from '@/components/PortfolioSection'
 
 export const revalidate = 60
 
@@ -196,6 +197,9 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </section>
+
+      {/* PORTFÓLIO */}
+      <PortfolioSection />
 
       {/* SOBRE */}
       <section className="p-sobre">
