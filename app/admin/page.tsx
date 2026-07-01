@@ -223,17 +223,22 @@ export default function AdminPage() {
     if (!form.client.trim()) { alert('Informe o nome do cliente.'); return }
     setSaving(true)
     const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, payment_terms: paymentTerms, show_portfolio: showPortfolio, pillars, steps, deliverables, services, timeline }
+    let error = null
     if (editingId) {
       const original = proposals.find(p => p.id === editingId)
       if ((original as any)?.source === 'briefing_externo') {
         (payload as any).briefing_reviewed = true
       }
-      await supabase.from('proposals').update(payload).eq('id', editingId)
-      showToast('Proposta atualizada!')
+      error = (await supabase.from('proposals').update(payload).eq('id', editingId)).error
     } else {
-      await supabase.from('proposals').insert(payload)
-      showToast('Proposta criada!')
+      error = (await supabase.from('proposals').insert(payload)).error
     }
+    if (error) {
+      setSaving(false)
+      showToast('Erro ao salvar: ' + error.message)
+      return
+    }
+    showToast(editingId ? 'Proposta atualizada!' : 'Proposta criada!')
     await fetchAll()
     setModalOpen(false)
     setSaving(false)
