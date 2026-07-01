@@ -72,6 +72,15 @@ export async function GET(req: NextRequest) {
       .eq('status', 'confirmed')
       .order('confirmed_at', { ascending: true })
 
+    const { data: business } = await supabase.from('business').select('*').eq('id', 1).maybeSingle()
+    const bizName = business?.legal_name || 'JOTTA HUB — Jorge Rennan do Amaral Viegas'
+    const bizDoc = business?.doc || 'CPF 016.332.740-80'
+    const bizCity = (business?.city && business?.uf) ? `${business.city}, ${business.uf}` : 'Porto Alegre, RS'
+    const bizForo = business?.foro || 'Porto Alegre, Estado do Rio Grande do Sul'
+    const bizShort = (business?.legal_name?.split('—')[0].trim()) || 'JOTTA HUB'
+    const bizSignerName = business?.signer_name || 'Jorge Rennan do Amaral Viegas'
+    const bizSignerCpf = business?.signer_cpf || '016.332.740-80'
+
     const clientSig = signatures?.find(s => s.signer_role === 'client' || s.signer_role !== 'contractor')
     const adminSig = signatures?.find(s => s.signer_role === 'contractor')
     const services = proposal.services || []
@@ -161,7 +170,7 @@ export async function GET(req: NextRequest) {
   <div class="section-label">Partes do Contrato</div>
   <div class="row">
     <span class="row-key">Contratada</span>
-    <span class="row-val">JOTTA HUB — Jorge Rennan do Amaral Viegas<br><span style="color:#888;font-size:0.72rem;">CPF 016.332.740-80 — Porto Alegre, RS</span></span>
+    <span class="row-val">${bizName}<br><span style="color:#888;font-size:0.72rem;">${bizDoc} — ${bizCity}</span></span>
   </div>
   <div class="row">
     <span class="row-key">Contratante</span>
@@ -270,7 +279,7 @@ ${services.length > 0 ? `
   <div class="clausula">
     <div class="clausula-num">Cláusula 9</div>
     <div class="clausula-titulo">Do Foro</div>
-    <div class="clausula-texto">As partes elegem o foro da Comarca de Porto Alegre, Estado do Rio Grande do Sul, para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato, renunciando a qualquer outro, por mais privilegiado que seja.</div>
+    <div class="clausula-texto">As partes elegem o foro da Comarca de ${bizForo}, para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato, renunciando a qualquer outro, por mais privilegiado que seja.</div>
   </div>
 </div>
 
@@ -293,13 +302,13 @@ ${services.length > 0 ? `
 
   ${adminSig ? `
   <div class="sig-box">
-    <div class="sig-role">Contratada — JOTTA HUB</div>
+    <div class="sig-role">Contratada — ${bizShort}</div>
     <div class="sig-name">${adminSig.signer_name}</div>
     <div class="sig-detail">CPF: ${adminSig.signer_cpf}</div>
     <div class="sig-detail">E-mail: ${adminSig.signer_email}</div>
     <div class="sig-detail">Data: ${fmtDate(adminSig.confirmed_at)}</div>
     <div class="valid-badge">✓ Contra-assinado</div>
-  </div>` : '<div class="sig-box"><div class="sig-role">Contratada — JOTTA HUB</div><div style="color:#555;font-size:0.78rem;">Aguardando assinatura</div></div>'}
+  </div>` : `<div class="sig-box"><div class="sig-role">Contratada — ${bizShort}</div><div class="sig-name">${bizSignerName}</div><div class="sig-detail">CPF: ${bizSignerCpf}</div><div style="color:#555;font-size:0.78rem;margin-top:6px;">Aguardando assinatura</div></div>`}
 </div>
 
 ${clientSig?.proposal_hash ? `

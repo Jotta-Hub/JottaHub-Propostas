@@ -12,6 +12,7 @@ import PortfolioPanel from '@/components/PortfolioPanel'
 import NinaAssistant from '@/components/NinaAssistant'
 import HeroConfig from '@/components/HeroConfig'
 import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '@/lib/templates'
+import BusinessPanel from '@/components/BusinessPanel'
 
 type Signature = {
   id: string
@@ -37,7 +38,7 @@ type Payment = {
   is_retroactive?: boolean
 }
 
-type View = 'dashboard' | 'briefings' | 'financeiro' | 'proposals' | 'usuarios' | 'portfolio'
+type View = 'dashboard' | 'briefings' | 'financeiro' | 'proposals' | 'usuarios' | 'portfolio' | 'negocio'
 
 const DEFAULT_PAYMENT = [
   { label: 'Na Aprovação', percent: 50, desc: 'Na aprovação e assinatura do contrato para início do projeto.' },
@@ -504,6 +505,7 @@ export default function AdminPage() {
               { key: 'proposals', label: '📋 Propostas' },
               { key: 'usuarios', label: '👤 Usuários' },
               { key: 'portfolio', label: '🎬 Portfólio' },
+              { key: 'negocio', label: '🏢 Meu Negócio' },
             ] as { key: View; label: string; badge?: number }[]).map(v => (
               <button key={v.key} onClick={() => setView(v.key)} style={{
                 fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase',
@@ -962,6 +964,8 @@ export default function AdminPage() {
         {view === 'usuarios' && <UsersPanel />}
 
         {view === 'portfolio' && <PortfolioPanel />}
+
+        {view === 'negocio' && <BusinessPanel />}
       </div>
 
       {/* MODAL PROPOSTA */}
