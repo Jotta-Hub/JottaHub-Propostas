@@ -189,7 +189,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
       <section className="p-sec alt">
         <div className="p-sec-label">Condições</div>
         <h2 className="p-sec-title">Forma de <span className="r">Pagamento</span></h2>
-        <p className="p-body">Emissão de nota fiscal inclusa. Pagamento via PIX ou transferência bancária.</p>
+        <p className="p-body">Emissão de nota fiscal inclusa. Escolha a forma de pagamento que ficar melhor pra você.</p>
         <div className="p-payment-grid">
           <div className="p-pay-card">
             <div className="p-pay-step">50%</div>
@@ -202,6 +202,25 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
             <div className="p-pay-title">Na Entrega</div>
             <div className="p-pay-pct">{fmtBRL(total * 0.5)}</div>
             <div className="p-pay-desc">Na entrega final de todos os materiais após aprovação.</div>
+          </div>
+        </div>
+
+        {/* Formas de pagamento aceitas */}
+        <div style={{ marginTop: 40 }}>
+          <div className="p-sec-label" style={{ marginBottom: 18 }}>Formas aceitas</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14 }}>
+            {[
+              { icon: '⚡', t: 'PIX', d: 'À vista, sem taxa. Confirmação na hora.' },
+              { icon: '💳', t: 'Cartão de crédito', d: 'Em até 12x, mediante as taxas da operadora.' },
+              { icon: '🔁', t: 'Pagamento recorrente', d: 'Mensalidade pra serviços contínuos (gestão, assinaturas).' },
+            ].map(m => (
+              <div key={m.t} style={{ border: '1px solid var(--gray2)', borderRadius: 3, padding: '20px 22px', background: 'var(--gray)', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: 'linear-gradient(180deg, var(--purple-bright), var(--gold))' }} />
+                <div style={{ fontSize: '1.5rem', marginBottom: 10 }}>{m.icon}</div>
+                <div style={{ fontFamily: 'var(--fd)', fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.02em' }}>{m.t}</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--mid)', marginTop: 5, lineHeight: 1.6 }}>{m.d}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
