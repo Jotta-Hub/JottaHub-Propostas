@@ -17,6 +17,30 @@ export function fileToBase64(file: File): Promise<string> {
   })
 }
 
+// Redimensiona e comprime a imagem no navegador antes de mandar pra IA —
+// evita estourar o limite de payload e economiza tokens da visão do Claude.
+async function compressImage(file: File): Promise<{ data: string; mime: string }> {
+  try {
+    const url = URL.createObjectURL(file)
+    const img = document.createElement('img')
+    await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error('img')); img.src = url })
+    URL.revokeObjectURL(url)
+    const maxDim = 1568
+    let { width, height } = img
+    if (Math.max(width, height) > maxDim) {
+      const scale = maxDim / Math.max(width, height)
+      width = Math.round(width * scale); height = Math.round(height * scale)
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = width; canvas.height = height
+    canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.82)
+    return { data: dataUrl.replace(/^data:[^;]+;base64,/, ''), mime: 'image/jpeg' }
+  } catch {
+    return { data: await fileToBase64(file), mime: file.type }
+  }
+}
+
 export default function AttachmentBar({ images, setImages, onText, disabled }: {
   images: ImgAttach[]
   setImages: React.Dispatch<React.SetStateAction<ImgAttach[]>>
@@ -34,9 +58,9 @@ export default function AttachmentBar({ images, setImages, onText, disabled }: {
     e.target.value = ''; setErr('')
     for (const f of files) {
       if (!f.type.startsWith('image/')) continue
-      if (f.size > 5 * 1024 * 1024) { setErr('Cada print precisa ter no máximo 5MB.'); continue }
-      const data = await fileToBase64(f)
-      setImages(prev => [...prev, { data, mime: f.type, name: f.name }])
+      if (f.size > 25 * 1024 * 1024) { setErr('Imagem muito grande (máx. 25MB).'); continue }
+      const { data, mime } = await compressImage(f)
+      setImages(prev => [...prev, { data, mime, name: f.name }])
     }
   }
   const removeImage = (i: number) => setImages(prev => prev.filter((_, idx) => idx !== i))
