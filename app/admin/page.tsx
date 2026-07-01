@@ -13,6 +13,7 @@ import NinaAssistant from '@/components/NinaAssistant'
 import HeroConfig from '@/components/HeroConfig'
 import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '@/lib/templates'
 import BusinessPanel from '@/components/BusinessPanel'
+import { upload } from '@vercel/blob/client'
 
 type Signature = {
   id: string
@@ -206,17 +207,15 @@ export default function AdminPage() {
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const ext = file.name.split('.').pop()
-    const path = `logos/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('proposal-assets').upload(path, file, { upsert: true })
-    if (error) {
+    try {
+      const blob = await upload(`logos/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, { access: 'public', handleUploadUrl: '/api/portfolio-upload' })
+      setLogoPreview(blob.url)
+    } catch {
+      // fallback: embute em base64 se o upload falhar
       const reader = new FileReader()
       reader.onload = ev => setLogoPreview(ev.target?.result as string)
       reader.readAsDataURL(file)
-      return
     }
-    const { data } = supabase.storage.from('proposal-assets').getPublicUrl(path)
-    setLogoPreview(data.publicUrl)
   }
 
   async function saveProposal() {
