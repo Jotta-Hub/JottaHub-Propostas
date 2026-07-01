@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 3000,
+        max_tokens: 8000,
         system: `Você é um assistente especializado em criar propostas comerciais para a JOTTA HUB, um hub estratégico de comunicação, posicionamento e produção audiovisual de Porto Alegre.
 
 A JOTTA HUB atua em:
@@ -123,7 +123,14 @@ Para os deliverables, use emojis relevantes: 🎬📷📱🖥️🎙️✏️�
     }
 
     const data = await response.json()
-    const text = data.content[0].text.trim()
+
+    if (data?.stop_reason === 'max_tokens') {
+      return NextResponse.json({ error: 'A proposta ficou muito longa e foi cortada. Tente um briefing um pouco mais curto ou gere de novo.' }, { status: 500 })
+    }
+    const text = (data?.content?.[0]?.text || '').trim()
+    if (!text) {
+      return NextResponse.json({ error: 'A IA não retornou conteúdo. Tente novamente.' }, { status: 500 })
+    }
 
     // Parser robusto
     let proposal
