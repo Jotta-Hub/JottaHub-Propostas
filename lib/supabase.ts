@@ -32,6 +32,7 @@ export type Proposal = {
   hero_mode?: 'clean' | 'photo' | 'video'
   hero_media?: string
   hero_format?: 'compact' | 'medium' | 'cinema' | 'full'
+  payment_terms?: { label: string; percent: number; desc: string }[]
   pillars?: { name: string; body: string }[]
   steps?: { title: string; desc: string }[]
   deliverables?: { icon: string; name: string; body: string }[]

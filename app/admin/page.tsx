@@ -39,6 +39,11 @@ type Payment = {
 
 type View = 'dashboard' | 'briefings' | 'financeiro' | 'proposals' | 'usuarios' | 'portfolio'
 
+const DEFAULT_PAYMENT = [
+  { label: 'Na Aprovação', percent: 50, desc: 'Na aprovação e assinatura do contrato para início do projeto.' },
+  { label: 'Na Entrega', percent: 50, desc: 'Na entrega final de todos os materiais após aprovação.' },
+]
+
 function fmt(d?: string) {
   if (!d) return '—'
   return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR')
@@ -74,6 +79,7 @@ export default function AdminPage() {
   const [heroMode, setHeroMode] = useState<'clean' | 'photo' | 'video'>('clean')
   const [heroMedia, setHeroMedia] = useState('')
   const [heroFormat, setHeroFormat] = useState<'compact' | 'medium' | 'cinema' | 'full'>('medium')
+  const [paymentTerms, setPaymentTerms] = useState<{ label: string; percent: number; desc: string }[]>([])
   const [activeEmojiIdx, setActiveEmojiIdx] = useState<number | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all')
@@ -177,6 +183,7 @@ export default function AdminPage() {
       setHeroMode(p.hero_mode || 'clean')
       setHeroMedia(p.hero_media || '')
       setHeroFormat(p.hero_format || 'medium')
+      setPaymentTerms(p.payment_terms?.length ? p.payment_terms : DEFAULT_PAYMENT)
       setPillars(p.pillars || [])
       setSteps(p.steps?.length ? p.steps : DEFAULT_STEPS)
       setDeliverables(p.deliverables || [])
@@ -187,6 +194,7 @@ export default function AdminPage() {
       setForm({ client: '', contact: '', greeting: '', intro: '', title: '', objective: '', context: '', validity: 5, status: 'pending' })
       setLogoPreview(null); setLogoMode('original')
       setHeroMode('clean'); setHeroMedia(''); setHeroFormat('medium')
+      setPaymentTerms(DEFAULT_PAYMENT)
       setPillars([]); setSteps(DEFAULT_STEPS); setDeliverables([]); setServices([]); setTimeline([])
     }
     setModalOpen(true)
@@ -211,7 +219,7 @@ export default function AdminPage() {
   async function saveProposal() {
     if (!form.client.trim()) { alert('Informe o nome do cliente.'); return }
     setSaving(true)
-    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, pillars, steps, deliverables, services, timeline }
+    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, payment_terms: paymentTerms, pillars, steps, deliverables, services, timeline }
     if (editingId) {
       const original = proposals.find(p => p.id === editingId)
       if ((original as any)?.source === 'briefing_externo') {
@@ -1048,6 +1056,24 @@ export default function AdminPage() {
               <div className="form-group full">
                 <div className="dyn-list">{timeline.map((t, i) => (<div key={i} className="dyn-item"><input className="form-input" style={{ width: 82, flexShrink: 0 }} placeholder="Fase 01" value={t.phase} onChange={e => setTimeline(x => x.map((it, j) => j === i ? { ...it, phase: e.target.value } : it))} /><input className="form-input" style={{ flex: 1 }} placeholder="Nome da fase" value={t.name} onChange={e => setTimeline(x => x.map((it, j) => j === i ? { ...it, name: e.target.value } : it))} /><input className="form-input" style={{ flex: 2 }} placeholder="Item 1, Item 2, ..." value={t.items} onChange={e => setTimeline(x => x.map((it, j) => j === i ? { ...it, items: e.target.value } : it))} /><button className="remove-btn" onClick={() => setTimeline(x => x.filter((_, j) => j !== i))}>−</button></div>))}</div>
                 <button className="add-btn" onClick={() => setTimeline(x => [...x, { phase: '', name: '', items: '' }])}>+ Adicionar Fase</button>
+              </div>
+              <hr className="form-divider" />
+              <div className="form-section-label">Forma de Pagamento</div>
+              <div className="form-group full">
+                <div className="dyn-list">{paymentTerms.map((pt, i) => (
+                  <div key={i} className="dyn-item">
+                    <input className="form-input" style={{ flex: 1.2 }} placeholder="Na Aprovação" value={pt.label} onChange={e => setPaymentTerms(x => x.map((it, j) => j === i ? { ...it, label: e.target.value } : it))} />
+                    <input className="form-input" style={{ width: 68, flexShrink: 0 }} type="number" min={0} max={100} placeholder="%" value={pt.percent || ''} onChange={e => setPaymentTerms(x => x.map((it, j) => j === i ? { ...it, percent: parseInt(e.target.value) || 0 } : it))} />
+                    <input className="form-input" style={{ flex: 2 }} placeholder="Descrição (ex: entrada na assinatura)" value={pt.desc} onChange={e => setPaymentTerms(x => x.map((it, j) => j === i ? { ...it, desc: e.target.value } : it))} />
+                    <button className="remove-btn" onClick={() => setPaymentTerms(x => x.filter((_, j) => j !== i))}>−</button>
+                  </div>
+                ))}</div>
+                <button className="add-btn" onClick={() => setPaymentTerms(x => [...x, { label: '', percent: 0, desc: '' }])}>+ Adicionar Parcela</button>
+                {(() => { const soma = paymentTerms.reduce((s, p) => s + (p.percent || 0), 0); return (
+                  <div style={{ fontSize: '0.72rem', color: soma === 100 ? 'var(--mid)' : '#FFB400', marginTop: 8 }}>
+                    Soma das parcelas: {soma}% {soma === 100 ? '✓' : '— o ideal é fechar 100% do valor'}
+                  </div>
+                ) })()}
               </div>
               <hr className="form-divider" />
               <div className="form-section-label">Condições</div>

@@ -191,18 +191,17 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
         <h2 className="p-sec-title">Forma de <span className="r">Pagamento</span></h2>
         <p className="p-body">Emissão de nota fiscal inclusa. Escolha a forma de pagamento que ficar melhor pra você.</p>
         <div className="p-payment-grid">
-          <div className="p-pay-card">
-            <div className="p-pay-step">50%</div>
-            <div className="p-pay-title">Na Aprovação</div>
-            <div className="p-pay-pct">{fmtBRL(total * 0.5)}</div>
-            <div className="p-pay-desc">Na aprovação e assinatura do contrato para início do projeto.</div>
-          </div>
-          <div className="p-pay-card">
-            <div className="p-pay-step">50%</div>
-            <div className="p-pay-title">Na Entrega</div>
-            <div className="p-pay-pct">{fmtBRL(total * 0.5)}</div>
-            <div className="p-pay-desc">Na entrega final de todos os materiais após aprovação.</div>
-          </div>
+          {(p.payment_terms?.length ? p.payment_terms : [
+            { label: 'Na Aprovação', percent: 50, desc: 'Na aprovação e assinatura do contrato para início do projeto.' },
+            { label: 'Na Entrega', percent: 50, desc: 'Na entrega final de todos os materiais após aprovação.' },
+          ]).map((pt, i) => (
+            <div key={i} className="p-pay-card">
+              <div className="p-pay-step">{pt.percent}%</div>
+              <div className="p-pay-title">{pt.label}</div>
+              <div className="p-pay-pct">{fmtBRL(total * (pt.percent || 0) / 100)}</div>
+              <div className="p-pay-desc">{pt.desc}</div>
+            </div>
+          ))}
         </div>
 
         {/* Formas de pagamento aceitas */}
