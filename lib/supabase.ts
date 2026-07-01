@@ -33,6 +33,7 @@ export type Proposal = {
   hero_media?: string
   hero_format?: 'compact' | 'medium' | 'cinema' | 'full'
   payment_terms?: { label: string; percent: number; desc: string }[]
+  show_portfolio?: boolean
   pillars?: { name: string; body: string }[]
   steps?: { title: string; desc: string }[]
   deliverables?: { icon: string; name: string; body: string }[]

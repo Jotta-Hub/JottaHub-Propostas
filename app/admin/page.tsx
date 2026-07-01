@@ -80,6 +80,7 @@ export default function AdminPage() {
   const [heroMedia, setHeroMedia] = useState('')
   const [heroFormat, setHeroFormat] = useState<'compact' | 'medium' | 'cinema' | 'full'>('medium')
   const [paymentTerms, setPaymentTerms] = useState<{ label: string; percent: number; desc: string }[]>([])
+  const [showPortfolio, setShowPortfolio] = useState(true)
   const [activeEmojiIdx, setActiveEmojiIdx] = useState<number | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all')
@@ -184,6 +185,7 @@ export default function AdminPage() {
       setHeroMedia(p.hero_media || '')
       setHeroFormat(p.hero_format || 'medium')
       setPaymentTerms(p.payment_terms?.length ? p.payment_terms : DEFAULT_PAYMENT)
+      setShowPortfolio(p.show_portfolio !== false)
       setPillars(p.pillars || [])
       setSteps(p.steps?.length ? p.steps : DEFAULT_STEPS)
       setDeliverables(p.deliverables || [])
@@ -194,7 +196,7 @@ export default function AdminPage() {
       setForm({ client: '', contact: '', greeting: '', intro: '', title: '', objective: '', context: '', validity: 5, status: 'pending' })
       setLogoPreview(null); setLogoMode('original')
       setHeroMode('clean'); setHeroMedia(''); setHeroFormat('medium')
-      setPaymentTerms(DEFAULT_PAYMENT)
+      setPaymentTerms(DEFAULT_PAYMENT); setShowPortfolio(true)
       setPillars([]); setSteps(DEFAULT_STEPS); setDeliverables([]); setServices([]); setTimeline([])
     }
     setModalOpen(true)
@@ -219,7 +221,7 @@ export default function AdminPage() {
   async function saveProposal() {
     if (!form.client.trim()) { alert('Informe o nome do cliente.'); return }
     setSaving(true)
-    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, payment_terms: paymentTerms, pillars, steps, deliverables, services, timeline }
+    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, payment_terms: paymentTerms, show_portfolio: showPortfolio, pillars, steps, deliverables, services, timeline }
     if (editingId) {
       const original = proposals.find(p => p.id === editingId)
       if ((original as any)?.source === 'briefing_externo') {
@@ -1079,6 +1081,17 @@ export default function AdminPage() {
               <div className="form-section-label">Condições</div>
               <div className="form-group"><label className="form-label">Validade (dias úteis)</label><input className="form-input" type="number" min={1} max={60} value={form.validity} onChange={e => setForm(x => ({ ...x, validity: parseInt(e.target.value) || 5 }))} /></div>
               <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={form.status} onChange={e => setForm(x => ({ ...x, status: e.target.value as Proposal['status'] }))}><option value="pending">Rascunho</option><option value="sent">Enviada</option><option value="approved">Aprovada</option><option value="expired">Expirada</option></select></div>
+              <div className="form-group full">
+                <div onClick={() => setShowPortfolio(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '12px 14px', background: 'var(--gray)', border: '1px solid var(--gray2)', borderRadius: 3 }}>
+                  <div style={{ width: 40, height: 22, borderRadius: 11, background: showPortfolio ? 'var(--red)' : 'var(--gray3)', position: 'relative', transition: 'background .2s', flexShrink: 0 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: showPortfolio ? 20 : 2, transition: 'left .2s' }} />
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Mostrar portfólio nesta proposta</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--mid)', marginTop: 2 }}>Exibe a galeria de trabalhos na proposta do cliente.</div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="form-actions">
               <button className="btn-sm ghost" onClick={() => setModalOpen(false)}>Cancelar</button>
