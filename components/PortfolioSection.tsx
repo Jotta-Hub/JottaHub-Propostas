@@ -7,6 +7,7 @@ type Item = {
   category: string | null
   media_url: string
   thumb_url: string | null
+  aspect: string | null
 }
 
 function embedUrl(url: string): string | null {
@@ -34,7 +35,7 @@ export default async function PortfolioSection() {
           const emb = it.kind === 'video' ? embedUrl(it.media_url) : null
           return (
             <div key={it.id} className="pf-item">
-              <div className="pf-media">
+              <div className={`pf-media a-${it.aspect || '16x9'}`}>
                 {it.kind === 'photo' ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={it.media_url} alt={it.title || ''} loading="lazy" />

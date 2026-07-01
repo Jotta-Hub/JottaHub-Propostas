@@ -211,22 +211,33 @@ body::after { content:''; position: fixed; inset:0; background-image: url("data:
 .p-hero.has-bg.hero-cinema { min-height: 90vh; }
 .p-hero.has-bg.hero-full { min-height: 100vh; }
 
-/* PORTFÓLIO — galeria da proposta */
-.pf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 40px; }
-.pf-item { border: 1px solid var(--gray2); border-radius: 6px; overflow: hidden; background: var(--gray); transition: border-color .3s, transform .3s, box-shadow .3s; }
+/* PORTFÓLIO — galeria da proposta (masonry, proporção por item) */
+.pf-grid { columns: 3 300px; column-gap: 16px; margin-top: 40px; }
+.pf-item { break-inside: avoid; margin-bottom: 16px; display: inline-block; width: 100%; border: 1px solid var(--gray2); border-radius: 6px; overflow: hidden; background: var(--gray); transition: border-color .3s, transform .3s, box-shadow .3s; }
 .pf-item:hover { border-color: rgba(134,54,242,.5); transform: translateY(-4px); box-shadow: 0 14px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(134,54,242,.15); }
-.pf-media { aspect-ratio: 16/9; background: var(--black); position: relative; overflow: hidden; }
-.pf-media img, .pf-media video, .pf-media iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
+.pf-media { position: relative; overflow: hidden; background: var(--black); }
+.pf-media.a-16x9 { aspect-ratio: 16/9; }
+.pf-media.a-1x1 { aspect-ratio: 1/1; }
+.pf-media.a-9x16 { aspect-ratio: 9/16; }
+/* proporção fixa: a mídia preenche o quadro */
+.pf-media.a-16x9 img, .pf-media.a-16x9 video, .pf-media.a-16x9 iframe,
+.pf-media.a-1x1 img, .pf-media.a-1x1 video, .pf-media.a-1x1 iframe,
+.pf-media.a-9x16 img, .pf-media.a-9x16 video, .pf-media.a-9x16 iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border: none; display: block;
+}
+/* natural: a própria mídia define a altura */
+.pf-media.a-natural img { display: block; width: 100%; height: auto; }
+.pf-media.a-natural video, .pf-media.a-natural iframe { display: block; width: 100%; aspect-ratio: 16/9; height: auto; border: none; }
 .pf-media img { transition: transform .55s ease; }
 .pf-item:hover .pf-media img { transform: scale(1.07); }
-.pf-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 16px; background: linear-gradient(180deg, transparent 42%, rgba(8,7,11,0.88) 100%); opacity: 0.9; transition: opacity .3s; }
+.pf-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 16px; background: linear-gradient(180deg, transparent 42%, rgba(8,7,11,0.88) 100%); opacity: 0.9; transition: opacity .3s; z-index: 2; }
 .pf-item:hover .pf-overlay { opacity: 1; }
 .pf-overlay-t { font-family: var(--fd); font-weight: 900; font-size: 1rem; text-transform: uppercase; letter-spacing: .02em; color: var(--white); }
 .pf-overlay-c { font-size: .74rem; color: var(--gold); margin-top: 2px; letter-spacing: .05em; text-transform: uppercase; }
 .pf-cap { padding: 13px 16px; }
 .pf-cap-t { font-family: var(--fd); font-weight: 900; font-size: .95rem; text-transform: uppercase; letter-spacing: .02em; }
 .pf-cap-c { font-size: .74rem; color: var(--mid); margin-top: 2px; }
-@media (max-width: 640px) { .pf-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .pf-grid { columns: 1; } }
 .p-hero-client-logo { position: absolute; top: 40px; right: 64px; z-index: 2; max-height: 72px; max-width: 180px; display: none; opacity: 0; animation: fadeUp 0.8s 0.1s forwards; }
 .p-hero-client-logo.has-logo { display: block; }
 .p-hero-client-logo img { max-height: 72px; max-width: 180px; object-fit: contain; }

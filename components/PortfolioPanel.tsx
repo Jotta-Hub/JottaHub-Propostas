@@ -12,9 +12,17 @@ type Item = {
   category: string | null
   media_url: string
   thumb_url: string | null
+  aspect: string | null
   sort: number
   active: boolean
 }
+
+const ASPECTS: { id: string; label: string }[] = [
+  { id: '16x9', label: '16:9 Vídeo' },
+  { id: '1x1', label: '1:1 Post' },
+  { id: '9x16', label: '9:16 Reels' },
+  { id: 'natural', label: 'Natural' },
+]
 
 // extrai thumbnail de link de vídeo (YouTube). Vimeo/MP4 ficam sem thumb.
 function videoThumb(url: string): string | null {
@@ -32,6 +40,7 @@ export default function PortfolioPanel() {
   const [category, setCategory] = useState('')
   const [link, setLink] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [aspect, setAspect] = useState('16x9')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -64,7 +73,7 @@ export default function PortfolioPanel() {
       if (kind === 'video' && source === 'link') thumb_url = videoThumb(media_url)
 
       const sort = items.length
-      const { error } = await supabase.from('portfolio').insert({ kind, source, title: title.trim() || null, category: category.trim() || null, media_url, thumb_url, sort, active: true })
+      const { error } = await supabase.from('portfolio').insert({ kind, source, title: title.trim() || null, category: category.trim() || null, media_url, thumb_url, aspect, sort, active: true })
       if (error) throw new Error(error.message)
       setTitle(''); setCategory(''); setLink(''); setFile(null)
       load()
@@ -117,6 +126,14 @@ export default function PortfolioPanel() {
           <span style={{ width: 1, background: 'var(--gray3)', margin: '0 4px' }} />
           <button onClick={() => setSource('upload')} style={seg(source === 'upload')}>⬆ Upload</button>
           <button onClick={() => setSource('link')} style={seg(source === 'link')}>🔗 Link</button>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: '0.62rem', fontFamily: 'var(--fd)', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 8 }}>Proporção</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {ASPECTS.map(a => (
+              <button key={a.id} onClick={() => setAspect(a.id)} style={seg(aspect === a.id)}>{a.label}</button>
+            ))}
+          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <div><label style={label}>Título</label><input style={input} placeholder="Ex: Vídeo institucional — Clínica X" value={title} onChange={e => setTitle(e.target.value)} /></div>
