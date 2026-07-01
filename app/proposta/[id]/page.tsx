@@ -28,7 +28,15 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
       <PrintButton />
 
       {/* HERO */}
-      <section className="p-hero">
+      <section className={`p-hero${p.hero_mode && p.hero_mode !== 'clean' && p.hero_media ? ` has-bg hero-${p.hero_format || 'medium'}` : ''}`}>
+        {p.hero_mode && p.hero_mode !== 'clean' && p.hero_media && (
+          <div className="p-hero-bg">
+            {p.hero_mode === 'photo'
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={p.hero_media} alt="" />
+              : <video src={p.hero_media} autoPlay muted loop playsInline />}
+          </div>
+        )}
         <div className="p-hero-dots" />
         {p.logo_url && (
           <div className={`p-hero-client-logo has-logo${p.logo_mode === 'white' ? ' white-mode' : ''}`}>

@@ -10,6 +10,8 @@ import BriefingGenerator from '@/components/BriefingGenerator'
 import UsersPanel from '@/components/UsersPanel'
 import PortfolioPanel from '@/components/PortfolioPanel'
 import NinaAssistant from '@/components/NinaAssistant'
+import HeroConfig from '@/components/HeroConfig'
+import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '@/lib/templates'
 
 type Signature = {
   id: string
@@ -69,6 +71,9 @@ export default function AdminPage() {
   const [toast, setToast] = useState<{ msg: string; show: boolean }>({ msg: '', show: false })
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoMode, setLogoMode] = useState<'original' | 'white'>('original')
+  const [heroMode, setHeroMode] = useState<'clean' | 'photo' | 'video'>('clean')
+  const [heroMedia, setHeroMedia] = useState('')
+  const [heroFormat, setHeroFormat] = useState<'compact' | 'medium' | 'cinema' | 'full'>('medium')
   const [activeEmojiIdx, setActiveEmojiIdx] = useState<number | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all')
@@ -152,12 +157,26 @@ export default function AdminPage() {
     showToast('Proposta preenchida com IA! Revise os campos.')
   }
 
+  function applyTemplate(t: ProposalTemplate) {
+    const d = t.data
+    setForm(f => ({ ...f, title: d.title || f.title, objective: d.objective || f.objective, context: d.context || f.context, intro: d.intro || f.intro }))
+    if (d.pillars) setPillars(d.pillars)
+    if (d.steps) setSteps(d.steps)
+    if (d.deliverables) setDeliverables(d.deliverables)
+    if (d.services) setServices(d.services)
+    if (d.timeline) setTimeline(d.timeline)
+    showToast(`Template "${t.label}" aplicado! Ajuste o cliente e os valores.`)
+  }
+
   function openModal(p?: Proposal) {
     if (p) {
       setEditingId(p.id || null)
       setForm({ client: p.client, contact: p.contact || '', greeting: p.greeting || '', intro: p.intro || '', title: p.title || '', objective: p.objective || '', context: p.context || '', validity: p.validity || 5, status: p.status || 'pending' })
       setLogoPreview(p.logo_url || null)
       setLogoMode(p.logo_mode || 'original')
+      setHeroMode(p.hero_mode || 'clean')
+      setHeroMedia(p.hero_media || '')
+      setHeroFormat(p.hero_format || 'medium')
       setPillars(p.pillars || [])
       setSteps(p.steps?.length ? p.steps : DEFAULT_STEPS)
       setDeliverables(p.deliverables || [])
@@ -167,6 +186,7 @@ export default function AdminPage() {
       setEditingId(null)
       setForm({ client: '', contact: '', greeting: '', intro: '', title: '', objective: '', context: '', validity: 5, status: 'pending' })
       setLogoPreview(null); setLogoMode('original')
+      setHeroMode('clean'); setHeroMedia(''); setHeroFormat('medium')
       setPillars([]); setSteps(DEFAULT_STEPS); setDeliverables([]); setServices([]); setTimeline([])
     }
     setModalOpen(true)
@@ -191,7 +211,7 @@ export default function AdminPage() {
   async function saveProposal() {
     if (!form.client.trim()) { alert('Informe o nome do cliente.'); return }
     setSaving(true)
-    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, pillars, steps, deliverables, services, timeline }
+    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, pillars, steps, deliverables, services, timeline }
     if (editingId) {
       const original = proposals.find(p => p.id === editingId)
       if ((original as any)?.source === 'briefing_externo') {
@@ -955,6 +975,19 @@ export default function AdminPage() {
                   <BriefingGenerator onGenerated={handleBriefingGenerated} />
                 </div>
               )}
+              {!editingId && (
+                <div className="form-group full" style={{ marginTop: 4 }}>
+                  <label className="form-label" style={{ marginBottom: 8 }}>Ou comece de um template</label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {PROPOSAL_TEMPLATES.map(t => (
+                      <button key={t.id} type="button" onClick={() => applyTemplate(t)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.04em', textTransform: 'uppercase', padding: '9px 14px', borderRadius: 2, cursor: 'pointer', border: '1px solid var(--gray3)', background: 'var(--gray2)', color: 'var(--white)' }}>
+                        <span style={{ fontSize: '1rem' }}>{t.icon}</span>{t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <hr className="form-divider" />
               <div className="form-section-label">Cliente &amp; Logo</div>
               <div className="form-group full">
@@ -972,6 +1005,7 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
+              <HeroConfig mode={heroMode} setMode={setHeroMode} media={heroMedia} setMedia={setHeroMedia} format={heroFormat} setFormat={setHeroFormat} />
               {[{ id: 'client', label: 'Nome da Empresa *', placeholder: 'Cora Centro Pesquisa' }, { id: 'contact', label: 'Nome do Contato', placeholder: 'Dra. Karen' }].map(f => (
                 <div key={f.id} className="form-group">
                   <label className="form-label">{f.label}</label>

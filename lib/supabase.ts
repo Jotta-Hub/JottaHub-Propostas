@@ -29,6 +29,9 @@ export type Proposal = {
   status?: 'pending' | 'sent' | 'approved' | 'expired' | 'archived'
   logo_url?: string
   logo_mode?: 'original' | 'white'
+  hero_mode?: 'clean' | 'photo' | 'video'
+  hero_media?: string
+  hero_format?: 'compact' | 'medium' | 'cinema' | 'full'
   pillars?: { name: string; body: string }[]
   steps?: { title: string; desc: string }[]
   deliverables?: { icon: string; name: string; body: string }[]
