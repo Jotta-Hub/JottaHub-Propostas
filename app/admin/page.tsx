@@ -14,6 +14,7 @@ import HeroConfig from '@/components/HeroConfig'
 import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '@/lib/templates'
 import BusinessPanel from '@/components/BusinessPanel'
 import { upload } from '@vercel/blob/client'
+import ProposalPortfolioEditor, { type PfItem } from '@/components/ProposalPortfolioEditor'
 
 type Signature = {
   id: string
@@ -83,6 +84,7 @@ export default function AdminPage() {
   const [heroFormat, setHeroFormat] = useState<'compact' | 'medium' | 'cinema' | 'full'>('medium')
   const [paymentTerms, setPaymentTerms] = useState<{ label: string; percent: number; desc: string }[]>([])
   const [showPortfolio, setShowPortfolio] = useState(true)
+  const [portfolioItems, setPortfolioItems] = useState<PfItem[]>([])
   const [activeEmojiIdx, setActiveEmojiIdx] = useState<number | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'pending' | 'paid' | 'overdue'>('all')
@@ -188,6 +190,7 @@ export default function AdminPage() {
       setHeroFormat(p.hero_format || 'medium')
       setPaymentTerms(p.payment_terms?.length ? p.payment_terms : DEFAULT_PAYMENT)
       setShowPortfolio(p.show_portfolio !== false)
+      setPortfolioItems(p.portfolio_items || [])
       setPillars(p.pillars || [])
       setSteps(p.steps?.length ? p.steps : DEFAULT_STEPS)
       setDeliverables(p.deliverables || [])
@@ -198,7 +201,7 @@ export default function AdminPage() {
       setForm({ client: '', contact: '', greeting: '', intro: '', title: '', objective: '', context: '', validity: 5, status: 'pending' })
       setLogoPreview(null); setLogoMode('original')
       setHeroMode('clean'); setHeroMedia(''); setHeroFormat('medium')
-      setPaymentTerms(DEFAULT_PAYMENT); setShowPortfolio(true)
+      setPaymentTerms(DEFAULT_PAYMENT); setShowPortfolio(true); setPortfolioItems([])
       setPillars([]); setSteps(DEFAULT_STEPS); setDeliverables([]); setServices([]); setTimeline([])
     }
     setModalOpen(true)
@@ -221,7 +224,7 @@ export default function AdminPage() {
   async function saveProposal() {
     if (!form.client.trim()) { alert('Informe o nome do cliente.'); return }
     setSaving(true)
-    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, payment_terms: paymentTerms, show_portfolio: showPortfolio, pillars, steps, deliverables, services, timeline }
+    const payload: Proposal = { ...form, logo_url: logoPreview || undefined, logo_mode: logoMode, hero_mode: heroMode, hero_media: heroMedia || undefined, hero_format: heroFormat, payment_terms: paymentTerms, show_portfolio: showPortfolio, portfolio_items: portfolioItems, pillars, steps, deliverables, services, timeline }
     let error = null
     if (editingId) {
       const original = proposals.find(p => p.id === editingId)
@@ -1100,6 +1103,7 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
+              <ProposalPortfolioEditor items={portfolioItems} setItems={setPortfolioItems} />
             </div>
             <div className="form-actions">
               <button className="btn-sm ghost" onClick={() => setModalOpen(false)}>Cancelar</button>

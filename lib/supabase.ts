@@ -34,6 +34,7 @@ export type Proposal = {
   hero_format?: 'compact' | 'medium' | 'cinema' | 'full'
   payment_terms?: { label: string; percent: number; desc: string }[]
   show_portfolio?: boolean
+  portfolio_items?: { kind: 'photo' | 'video'; source: 'upload' | 'link'; media_url: string; title?: string; category?: string; aspect?: string; thumb_url?: string }[]
   pillars?: { name: string; body: string }[]
   steps?: { title: string; desc: string }[]
   deliverables?: { icon: string; name: string; body: string }[]

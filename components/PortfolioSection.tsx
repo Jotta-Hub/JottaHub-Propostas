@@ -1,13 +1,13 @@
 import { supabase } from '@/lib/supabase'
 
 type Item = {
-  id: string
+  id?: string
   kind: 'photo' | 'video'
-  title: string | null
-  category: string | null
+  title?: string | null
+  category?: string | null
   media_url: string
-  thumb_url: string | null
-  aspect: string | null
+  thumb_url?: string | null
+  aspect?: string | null
 }
 
 function embedUrl(url: string): string | null {
@@ -18,10 +18,15 @@ function embedUrl(url: string): string | null {
   return null
 }
 
-// Seção de portfólio na proposta pública — galeria de fotos e vídeos.
-export default async function PortfolioSection() {
-  const { data } = await supabase.from('portfolio').select('*').eq('active', true).order('sort')
-  const items = (data as Item[]) || []
+// Seção de portfólio na proposta pública. Combina os itens específicos da
+// proposta (extraItems) com a galeria global (se showGlobal).
+export default async function PortfolioSection({ extraItems = [], showGlobal = true }: { extraItems?: Item[]; showGlobal?: boolean }) {
+  let globalItems: Item[] = []
+  if (showGlobal) {
+    const { data } = await supabase.from('portfolio').select('*').eq('active', true).order('sort')
+    globalItems = (data as Item[]) || []
+  }
+  const items = [...extraItems, ...globalItems]
   if (items.length === 0) return null
 
   return (
@@ -31,10 +36,10 @@ export default async function PortfolioSection() {
       <p className="p-body" style={{ marginBottom: 8 }}>Uma amostra do que a gente entrega — vídeo, foto e direção.</p>
 
       <div className="pf-grid">
-        {items.map(it => {
+        {items.map((it, i) => {
           const emb = it.kind === 'video' ? embedUrl(it.media_url) : null
           return (
-            <div key={it.id} className="pf-item">
+            <div key={it.id || i} className="pf-item">
               <div className={`pf-media a-${it.aspect || '16x9'}`}>
                 {it.kind === 'photo' ? (
                   // eslint-disable-next-line @next/next/no-img-element

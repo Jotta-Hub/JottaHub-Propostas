@@ -225,7 +225,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
       </section>
 
       {/* PORTFÓLIO */}
-      {p.show_portfolio !== false && <PortfolioSection />}
+      <PortfolioSection extraItems={p.portfolio_items || []} showGlobal={p.show_portfolio !== false} />
 
       {/* SOBRE */}
       <section className="p-sobre">
