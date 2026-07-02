@@ -83,9 +83,11 @@ export default function ProposalPortfolioEditor({ items, setItems }: {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: 8, marginTop: 12 }}>
             {items.map((it, i) => (
               <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--gray3)', background: 'var(--gray2)' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={it.kind === 'video' ? (it.thumb_url || it.media_url) : it.media_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                {it.kind === 'video' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem', textShadow: '0 1px 4px #000' }}>▶</div>}
+                {it.kind === 'video' && !it.thumb_url
+                  ? <video src={it.media_url} muted preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  : <img src={it.kind === 'video' ? it.thumb_url! : it.media_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                {it.kind === 'video' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem', textShadow: '0 1px 4px #000', pointerEvents: 'none' }}>▶</div>}
                 <button type="button" onClick={() => setItems(prev => prev.filter((_, j) => j !== i))} style={{ position: 'absolute', top: 2, right: 2, width: 16, height: 16, borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,.7)', color: '#fff', fontSize: '.55rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>✕</button>
               </div>
             ))}

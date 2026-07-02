@@ -164,9 +164,11 @@ export default function PortfolioPanel() {
           {items.map((it, i) => (
             <div key={it.id} style={{ background: 'var(--gray)', border: '1px solid var(--gray2)', borderRadius: 4, overflow: 'hidden' }}>
               <div style={{ aspectRatio: '16/10', background: 'var(--black)', position: 'relative', overflow: 'hidden' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={it.kind === 'video' ? (it.thumb_url || it.media_url) : it.media_url} alt={it.title || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                {it.kind === 'video' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,.6)' }}>▶</div>}
+                {it.kind === 'video' && !it.thumb_url
+                  ? <video src={it.media_url} muted preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  : <img src={it.kind === 'video' ? it.thumb_url! : it.media_url} alt={it.title || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                {it.kind === 'video' && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,.6)', pointerEvents: 'none' }}>▶</div>}
               </div>
               <div style={{ padding: '10px 12px' }}>
                 <div style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: '0.82rem', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.title || '—'}</div>
