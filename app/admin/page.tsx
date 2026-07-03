@@ -79,7 +79,7 @@ export default function AdminPage() {
   const [toast, setToast] = useState<{ msg: string; show: boolean }>({ msg: '', show: false })
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoMode, setLogoMode] = useState<'original' | 'white'>('original')
-  const [heroMode, setHeroMode] = useState<'clean' | 'photo' | 'video'>('clean')
+  const [heroMode, setHeroMode] = useState<'default' | 'clean' | 'photo' | 'video'>('default')
   const [heroMedia, setHeroMedia] = useState('')
   const [heroFormat, setHeroFormat] = useState<'compact' | 'medium' | 'cinema' | 'full'>('medium')
   const [paymentTerms, setPaymentTerms] = useState<{ label: string; percent: number; desc: string }[]>([])
@@ -200,7 +200,7 @@ export default function AdminPage() {
       setEditingId(null)
       setForm({ client: '', contact: '', greeting: '', intro: '', title: '', objective: '', context: '', validity: 5, status: 'pending' })
       setLogoPreview(null); setLogoMode('original')
-      setHeroMode('clean'); setHeroMedia(''); setHeroFormat('medium')
+      setHeroMode('default'); setHeroMedia(''); setHeroFormat('medium')
       setPaymentTerms(DEFAULT_PAYMENT); setShowPortfolio(true); setPortfolioItems([])
       setPillars([]); setSteps(DEFAULT_STEPS); setDeliverables([]); setServices([]); setTimeline([])
     }
@@ -1026,7 +1026,7 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
-              <HeroConfig mode={heroMode} setMode={setHeroMode} media={heroMedia} setMedia={setHeroMedia} format={heroFormat} setFormat={setHeroFormat} />
+              <HeroConfig mode={heroMode} setMode={setHeroMode} media={heroMedia} setMedia={setHeroMedia} format={heroFormat} setFormat={setHeroFormat} allowDefault />
               {[{ id: 'client', label: 'Nome da Empresa *', placeholder: 'Cora Centro Pesquisa' }, { id: 'contact', label: 'Nome do Contato', placeholder: 'Dra. Karen' }].map(f => (
                 <div key={f.id} className="form-group">
                   <label className="form-label">{f.label}</label>

@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { upload } from '@vercel/blob/client'
+import HeroConfig from './HeroConfig'
 
 type Business = {
   legal_name: string; doc: string; city: string; uf: string; foro: string
   signer_name: string; signer_cpf: string; signer_email: string
   whatsapp: string; email: string; site: string; instagram: string; logo_url: string
   pix_key: string; bank: string; agency: string; account: string
+  hero_mode: string; hero_media: string; hero_format: string
 }
 
 const EMPTY: Business = {
@@ -16,6 +18,7 @@ const EMPTY: Business = {
   signer_name: '', signer_cpf: '', signer_email: '',
   whatsapp: '', email: '', site: '', instagram: '', logo_url: '',
   pix_key: '', bank: '', agency: '', account: '',
+  hero_mode: 'clean', hero_media: '', hero_format: 'medium',
 }
 
 export default function BusinessPanel() {
@@ -122,6 +125,17 @@ export default function BusinessPanel() {
             {F('account', 'Conta', '00000-0')}
           </div>
         </div>
+
+        <div style={secTitle}><span className="bolt" />Capa padrão das propostas</div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--mid)', marginBottom: 12 }}>Essa capa aparece em toda proposta que estiver no modo &quot;Capa padrão&quot;. Em cada proposta você pode trocar ou desligar.</div>
+        <HeroConfig
+          mode={(b.hero_mode as 'clean' | 'photo' | 'video') || 'clean'}
+          setMode={m => set('hero_mode', m)}
+          media={b.hero_media}
+          setMedia={u => set('hero_media', u)}
+          format={(b.hero_format as 'compact' | 'medium' | 'cinema' | 'full') || 'medium'}
+          setFormat={f => set('hero_format', f)}
+        />
 
         {msg && <div style={{ marginTop: 16, fontSize: '0.82rem', color: msg.startsWith('Erro') ? '#ff6b6b' : 'var(--gold)' }}>{msg}</div>}
         <button className="btn-red" onClick={save} disabled={saving} style={{ marginTop: 18, opacity: saving ? 0.7 : 1 }}>

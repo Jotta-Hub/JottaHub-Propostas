@@ -29,7 +29,7 @@ export type Proposal = {
   status?: 'pending' | 'sent' | 'approved' | 'expired' | 'archived'
   logo_url?: string
   logo_mode?: 'original' | 'white'
-  hero_mode?: 'clean' | 'photo' | 'video'
+  hero_mode?: 'default' | 'clean' | 'photo' | 'video'
   hero_media?: string
   hero_format?: 'compact' | 'medium' | 'cinema' | 'full'
   payment_terms?: { label: string; percent: number; desc: string }[]

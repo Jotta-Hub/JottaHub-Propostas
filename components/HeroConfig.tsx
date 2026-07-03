@@ -3,17 +3,19 @@
 import { useState } from 'react'
 import { upload } from '@vercel/blob/client'
 
-type Mode = 'clean' | 'photo' | 'video'
+type Mode = 'default' | 'clean' | 'photo' | 'video'
 type Format = 'compact' | 'medium' | 'cinema' | 'full'
 
-// Configuração da capa (hero) da proposta: limpo, foto ou vídeo de fundo + formato.
-export default function HeroConfig({ mode, setMode, media, setMedia, format, setFormat }: {
+// Configuração da capa (hero): padrão (do negócio), limpo, foto ou vídeo de fundo.
+// allowDefault liga a opção "Padrão" (usa a capa cadastrada em Meu Negócio).
+export default function HeroConfig({ mode, setMode, media, setMedia, format, setFormat, allowDefault = false }: {
   mode: Mode
   setMode: (m: Mode) => void
   media: string
   setMedia: (u: string) => void
   format: Format
   setFormat: (f: Format) => void
+  allowDefault?: boolean
 }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -38,12 +40,19 @@ export default function HeroConfig({ mode, setMode, media, setMedia, format, set
     <div className="form-group full">
       <label className="form-label">Capa da Proposta</label>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        <button type="button" onClick={() => setMode('clean')} style={seg(mode === 'clean')}>Limpo</button>
+        {allowDefault && <button type="button" onClick={() => setMode('default')} style={seg(mode === 'default')}>Capa padrão</button>}
+        <button type="button" onClick={() => setMode('clean')} style={seg(mode === 'clean')}>Sem capa</button>
         <button type="button" onClick={() => setMode('photo')} style={seg(mode === 'photo')}>Foto de fundo</button>
         <button type="button" onClick={() => setMode('video')} style={seg(mode === 'video')}>Vídeo de fundo</button>
       </div>
 
-      {mode !== 'clean' && (
+      {mode === 'default' && (
+        <div style={{ fontSize: '0.78rem', color: 'var(--mid)', background: 'var(--black)', border: '1px solid var(--gray3)', borderRadius: 3, padding: '12px 14px' }}>
+          Usa a <strong style={{ color: 'var(--purple-bright)' }}>capa padrão</strong> cadastrada em <strong>Meu Negócio</strong>. Se não tiver nenhuma lá, fica sem capa.
+        </div>
+      )}
+
+      {(mode === 'photo' || mode === 'video') && (
         <div style={{ background: 'var(--black)', border: '1px solid var(--gray3)', borderRadius: 3, padding: 14 }}>
           {media ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>

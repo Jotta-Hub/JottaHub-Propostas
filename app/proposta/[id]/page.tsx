@@ -12,6 +12,11 @@ async function getProposal(id: string): Promise<Proposal | null> {
   return data
 }
 
+async function getBusinessHero() {
+  const { data } = await supabase.from('business').select('hero_mode,hero_media,hero_format').eq('id', 1).maybeSingle()
+  return data
+}
+
 export default async function PropostaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProposal(id)
@@ -23,18 +28,25 @@ export default async function PropostaPage({ params }: { params: Promise<{ id: s
   const steps = p.steps?.length ? p.steps : DEFAULT_STEPS
   const validDate = p.created_at ? addWorkdays(p.created_at.slice(0, 10), p.validity || 5) : ''
 
+  // capa: modo 'default' (ou vazio) usa a capa padrão cadastrada em Meu Negócio
+  const useDefaultHero = !p.hero_mode || p.hero_mode === 'default'
+  const biz = useDefaultHero ? await getBusinessHero() : null
+  const heroMode = useDefaultHero ? (biz?.hero_mode || 'clean') : p.hero_mode
+  const heroMedia = useDefaultHero ? (biz?.hero_media || '') : (p.hero_media || '')
+  const heroFormat = useDefaultHero ? (biz?.hero_format || 'medium') : (p.hero_format || 'medium')
+
   return (
     <>
       <PrintButton />
 
       {/* HERO */}
-      <section className={`p-hero${p.hero_mode && p.hero_mode !== 'clean' && p.hero_media ? ` has-bg hero-${p.hero_format || 'medium'}` : ''}`}>
-        {p.hero_mode && p.hero_mode !== 'clean' && p.hero_media && (
+      <section className={`p-hero${heroMode !== 'clean' && heroMedia ? ` has-bg hero-${heroFormat}` : ''}`}>
+        {heroMode !== 'clean' && heroMedia && (
           <div className="p-hero-bg">
-            {p.hero_mode === 'photo'
+            {heroMode === 'photo'
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={p.hero_media} alt="" />
-              : <video src={p.hero_media} autoPlay muted loop playsInline />}
+              ? <img src={heroMedia} alt="" />
+              : <video src={heroMedia} autoPlay muted loop playsInline />}
           </div>
         )}
         <div className="p-hero-dots" />
