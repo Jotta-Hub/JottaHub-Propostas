@@ -171,7 +171,7 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
     try {
       await fetch('https://crm.jottahub.com.br/api/sync/briefing', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-sync-secret': process.env.SYNC_SECRET || '' },
         body: JSON.stringify({
           name: contact.name,
           company: contact.company || '',
@@ -190,7 +190,7 @@ Para "value" nos services, use os valores da tabela de preços da JOTTA HUB base
     try {
       await fetch('https://crm.jottahub.com.br/api/sync/proposta', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-sync-secret': process.env.SYNC_SECRET || '' },
         body: JSON.stringify({ type: 'INSERT', record: savedProposal }),
       })
     } catch (e) {
