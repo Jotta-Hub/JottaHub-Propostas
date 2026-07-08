@@ -7,6 +7,13 @@ const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
 
 export async function uploadToCloudinary(file: File): Promise<string> {
   if (!CLOUD || !PRESET) throw new Error('Cloudinary não configurado.')
+  const isVideo = file.type.startsWith('video/')
+  const limit = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024
+  if (file.size > limit) {
+    throw new Error(isVideo
+      ? `Vídeo de ${(file.size / 1048576).toFixed(0)}MB — o limite de upload é 100MB. Comprima (ex: HandBrake em 1080p) ou cole um link do YouTube/Vimeo.`
+      : `Imagem de ${(file.size / 1048576).toFixed(0)}MB — o limite é 10MB. Reduza o tamanho.`)
+  }
   const form = new FormData()
   form.append('file', file)
   form.append('upload_preset', PRESET)
