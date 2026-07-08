@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { upload } from '@vercel/blob/client'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 type Item = {
   id: string
@@ -63,12 +63,7 @@ export default function PortfolioPanel() {
       let thumb_url: string | null = null
 
       if (source === 'upload' && file) {
-        if (file.size > 1024 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 1GB).')
-        const blob = await upload(`portfolio/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, {
-          access: 'public',
-          handleUploadUrl: '/api/portfolio-upload',
-        })
-        media_url = blob.url
+        media_url = await uploadToCloudinary(file)
       }
       if (kind === 'video' && source === 'link') thumb_url = videoThumb(media_url)
 
@@ -85,10 +80,6 @@ export default function PortfolioPanel() {
 
   async function remove(it: Item) {
     if (!confirm(`Remover "${it.title || 'este item'}" do portfólio?`)) return
-    // remove o arquivo do Vercel Blob se foi upload (best-effort)
-    if (it.source === 'upload') {
-      fetch('/api/portfolio-upload', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: it.media_url }) }).catch(() => {})
-    }
     await supabase.from('portfolio').delete().eq('id', it.id)
     load()
   }

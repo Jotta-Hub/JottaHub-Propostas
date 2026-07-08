@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { upload } from '@vercel/blob/client'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 export type PfItem = { kind: 'photo' | 'video'; source: 'upload' | 'link'; media_url: string; title?: string; category?: string; aspect?: string; thumb_url?: string }
 
@@ -41,8 +41,8 @@ export default function ProposalPortfolioEditor({ items, setItems }: {
       let media_url = link.trim()
       if (source === 'upload' && file) {
         if (file.size > 1024 * 1024 * 1024) throw new Error('Arquivo muito grande (máx. 1GB).')
-        const blob = await upload(`portfolio/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, { access: 'public', handleUploadUrl: '/api/portfolio-upload' })
-        media_url = blob.url
+        const url = await uploadToCloudinary(file)
+        media_url = url
       }
       const thumb_url = kind === 'video' && source === 'link' ? videoThumb(media_url) : undefined
       setItems(prev => [...prev, { kind, source, media_url, title: title.trim() || undefined, category: category.trim() || undefined, aspect, thumb_url }])

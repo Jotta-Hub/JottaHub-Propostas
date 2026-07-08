@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { upload } from '@vercel/blob/client'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 import HeroConfig from './HeroConfig'
 
 type Business = {
@@ -50,8 +50,8 @@ export default function BusinessPanel() {
     if (!file) return
     setUploading(true); setMsg('')
     try {
-      const blob = await upload(`business/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, { access: 'public', handleUploadUrl: '/api/portfolio-upload' })
-      set('logo_url', blob.url)
+      const url = await uploadToCloudinary(file)
+      set('logo_url', url)
     } catch (err) { setMsg(err instanceof Error ? err.message : 'Falha no upload.') }
     setUploading(false)
   }

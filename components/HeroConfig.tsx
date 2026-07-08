@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { upload } from '@vercel/blob/client'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 type Mode = 'default' | 'clean' | 'photo' | 'video'
 type Format = 'compact' | 'medium' | 'cinema' | 'full'
@@ -26,8 +26,8 @@ export default function HeroConfig({ mode, setMode, media, setMedia, format, set
     if (file.size > 1024 * 1024 * 1024) { setError('Arquivo muito grande (máx. 1GB).'); return }
     setUploading(true); setError('')
     try {
-      const blob = await upload(`hero/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, { access: 'public', handleUploadUrl: '/api/portfolio-upload' })
-      setMedia(blob.url)
+      const url = await uploadToCloudinary(file)
+      setMedia(url)
       setMode(expect === 'image' ? 'photo' : 'video')
     } catch (err) { setError(err instanceof Error ? err.message : 'Falha no upload.') }
     setUploading(false)

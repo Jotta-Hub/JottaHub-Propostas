@@ -13,7 +13,7 @@ import NinaAssistant from '@/components/NinaAssistant'
 import HeroConfig from '@/components/HeroConfig'
 import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '@/lib/templates'
 import BusinessPanel from '@/components/BusinessPanel'
-import { upload } from '@vercel/blob/client'
+import { uploadToCloudinary } from '@/lib/cloudinary'
 import ProposalPortfolioEditor, { type PfItem } from '@/components/ProposalPortfolioEditor'
 
 type Signature = {
@@ -211,8 +211,8 @@ export default function AdminPage() {
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const blob = await upload(`logos/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`, file, { access: 'public', handleUploadUrl: '/api/portfolio-upload' })
-      setLogoPreview(blob.url)
+      const url = await uploadToCloudinary(file)
+      setLogoPreview(url)
     } catch {
       // fallback: embute em base64 se o upload falhar
       const reader = new FileReader()
